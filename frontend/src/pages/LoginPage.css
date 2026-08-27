@@ -1,0 +1,35 @@
+.login-page {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(47, 93, 87, 0.06), transparent 45%),
+    var(--color-bg);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 40px 36px;
+  text-align: center;
+}
+
+.login-mark {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.login-form {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+}
+
+.login-form .btn {
+  margin-top: 4px;
+}

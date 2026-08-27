@@ -1,0 +1,82 @@
+.models-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.models-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.models-section + .models-section {
+  margin-top: 48px;
+}
+
+.models-section-header h2 {
+  font-size: 1.05rem;
+}
+
+.models-section-header p {
+  margin-top: 4px;
+  font-size: 0.88rem;
+}
+
+.model-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.model-card.is-default {
+  border-color: var(--color-accent);
+}
+
+.model-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.model-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.model-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--color-ink-faint);
+}
+
+.model-status.status-downloaded {
+  color: var(--color-status-done);
+}
+.model-status.status-downloading {
+  color: var(--color-status-pending);
+}
+.model-status.status-error {
+  color: var(--color-status-error);
+}
+
+.model-error {
+  font-size: 0.78rem;
+}
+
+.model-size {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-ink-faint);
+}
+
+.model-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}

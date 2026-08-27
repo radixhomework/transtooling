@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-27T00:00:00Z",
+  "title": "Design System: TransTooLing",
+  "extensions": {
+    "colorMeta": {
+      "accent": { "role": "primary", "displayName": "Vert mousse", "canonical": "#2f5d57", "tonalRamp": ["#12211f", "#1a3130", "#244844", "#2f5d57", "#4f7a73", "#7b9c96", "#a9c0bc", "#d3e2df"] },
+      "accent-hover": { "role": "primary", "displayName": "Vert mousse profond", "canonical": "#244844" },
+      "accent-soft": { "role": "primary", "displayName": "Vert mousse pâle", "canonical": "#e2ebe9", "tonalRamp": ["#B8CAC6", "#C6D5D1", "#D0DEDA", "#D8E4E1", "#DEE9E5", "#E2EBE9", "#EBF2F0", "#F3F8F7"] },
+      "bg": { "role": "neutral", "displayName": "Papier chaud", "canonical": "#f6f5f2", "tonalRamp": ["#8F8A80", "#A5A096", "#BBB6AC", "#D1CCC2", "#E4E0D7", "#EFECE5", "#F6F5F2", "#FBFAF8"] },
+      "surface": { "role": "neutral", "displayName": "Surface blanche", "canonical": "#ffffff" },
+      "surface-sunken": { "role": "neutral", "displayName": "Surface enfoncée", "canonical": "#edece7" },
+      "ink": { "role": "neutral", "displayName": "Encre", "canonical": "#1b211f", "tonalRamp": ["#0C0F0E", "#161B19", "#1B211F", "#2E3532", "#4B524F", "#6E7673", "#8A908D", "#B9BEBB"] },
+      "status-pending": { "role": "tertiary", "displayName": "Ambre d'attente", "canonical": "#b8863a", "tonalRamp": ["#6B4B18", "#855C23", "#9E6E2C", "#B8863A", "#CBA161", "#DDBD8F", "#EDD9B9", "#F5EAD4"] },
+      "status-error": { "role": "tertiary", "displayName": "Brique d'erreur", "canonical": "#a24c3d", "tonalRamp": ["#5B251C", "#77332A", "#8F4033", "#A24C3D", "#BA6E60", "#D09B90", "#E6C4BC", "#F6E2DE"] }
+    },
+    "typographyMeta": {
+      "title": { "displayName": "Titre", "purpose": "Titre unique de chaque page (h1)." },
+      "body": { "displayName": "Corps", "purpose": "Phrases, descriptions, libellés de formulaires." },
+      "label": { "displayName": "Étiquette mono", "purpose": "Données techniques : badges, tableaux, identifiants, tailles, dates." }
+    },
+    "shadows": [
+      { "name": "card-ambient", "value": "0 1px 2px rgba(27,33,31,0.04), 0 4px 16px rgba(27,33,31,0.05)", "purpose": "Unique ombre du système : ambiance quasi imperceptible sous les cartes. Jamais en réponse à un état." }
+    ],
+    "motion": [
+      { "name": "state-color", "value": "0.15s ease", "purpose": "Transitions de couleur de fond/bord des états (survol, navigation, boutons)." },
+      { "name": "progress-width", "value": "0.4s ease", "purpose": "Transition d'échelle horizontale (scaleX) du remplissage des barres de progression — sans reflow." },
+      { "name": "waveform-bounce", "value": "0.9s ease-in-out infinite", "purpose": "Pulsation des barres de la forme d'onde, indicateur universel de traitement. Désactivée sous prefers-reduced-motion." }
+    ],
+    "breakpoints": [
+      { "name": "nav-wrap", "value": "720px", "purpose": "En-tête enveloppé, navigation en défilement horizontal." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Bouton primaire",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "L'action principale d'une vue : vert mousse plein, unique par écran.",
+      "html": "<button class=\"ds-btn-primary\">Traduire</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; border-radius: var(--radius-sm, 6px); padding: 10px 16px; font-size: 0.9rem; font-weight: 500; font-family: var(--font-ui, sans-serif); cursor: pointer; background: var(--color-accent, #2f5d57); color: #ffffff; transition: background-color 0.15s ease, opacity 0.15s ease; } .ds-btn-primary:hover { background: var(--color-accent-hover, #244844); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-accent, #2f5d57); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Bouton secondaire",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Actions neutres : surface blanche, bord franc, texte encre.",
+      "html": "<button class=\"ds-btn-secondary\">Annuler</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--color-border-strong, #c7c2b8); border-radius: var(--radius-sm, 6px); padding: 10px 16px; font-size: 0.9rem; font-weight: 500; font-family: var(--font-ui, sans-serif); cursor: pointer; background: var(--color-surface, #ffffff); color: var(--color-ink, #1b211f); transition: border-color 0.15s ease, background-color 0.15s ease; } .ds-btn-secondary:hover { border-color: var(--color-ink-soft, #4b524f); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--color-accent, #2f5d57); outline-offset: 2px; }"
+    },
+    {
+      "name": "Bouton danger",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destruction : bord et texte brique, fond brique pâle au survol.",
+      "html": "<button class=\"ds-btn-danger\">Supprimer</button>",
+      "css": ".ds-btn-danger { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--color-status-error, #a24c3d); border-radius: var(--radius-sm, 6px); padding: 10px 16px; font-size: 0.9rem; font-weight: 500; font-family: var(--font-ui, sans-serif); cursor: pointer; background: var(--color-surface, #ffffff); color: var(--color-status-error, #a24c3d); transition: background-color 0.15s ease; } .ds-btn-danger:hover { background: var(--color-status-error-soft, #f6e2de); } .ds-btn-danger:focus-visible { outline: 2px solid var(--color-accent, #2f5d57); outline-offset: 2px; }"
+    },
+    {
+      "name": "Badge de statut",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Pilule mono majuscule ; fond doux + texte coloré selon l'état.",
+      "html": "<span class=\"ds-badge\">Terminée</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; background: var(--color-status-done-soft, #e2ebe9); color: var(--color-status-done, #2f5d57); }"
+    },
+    {
+      "name": "Carte",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Conteneur standard : surface blanche, bord chaud, unique ombre ambiante.",
+      "html": "<div class=\"ds-card\">Carte de l'atelier</div>",
+      "css": ".ds-card { background: var(--color-surface, #ffffff); border: 1px solid var(--color-border, #dedad2); border-radius: var(--radius-lg, 16px); box-shadow: var(--shadow-card, 0 1px 2px rgba(27,33,31,0.04), 0 4px 16px rgba(27,33,31,0.05)); padding: 20px; color: var(--color-ink, #1b211f); font-family: var(--font-ui, sans-serif); font-size: 0.95rem; }"
+    },
+    {
+      "name": "Champ de saisie",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Champ sobre : bord franc, focus par bord vert mousse, sans halo.",
+      "html": "<input class=\"ds-input\" placeholder=\"Identifiant\" />",
+      "css": ".ds-input { padding: 10px 12px; border: 1px solid var(--color-border-strong, #c7c2b8); border-radius: var(--radius-sm, 6px); font-size: 0.95rem; font-family: var(--font-ui, sans-serif); background: var(--color-surface, #ffffff); color: var(--color-ink, #1b211f); } .ds-input:focus { border-color: var(--color-accent, #2f5d57); outline: none; }"
+    },
+    {
+      "name": "Lien de navigation",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Navigation : encre douce au repos, enfoncé au survol, vert pâle à l'état actif.",
+      "html": "<a class=\"ds-nav-link is-active\">Transcription</a>",
+      "css": ".ds-nav-link { color: var(--color-ink-soft, #4b524f); text-decoration: none; font-size: 0.88rem; font-weight: 500; padding: 8px 12px; border-radius: var(--radius-sm, 6px); transition: background-color 0.15s ease, color 0.15s ease; } .ds-nav-link:hover { background: var(--color-surface-sunken, #edece7); color: var(--color-ink, #1b211f); } .ds-nav-link.is-active { background: var(--color-accent-soft, #e2ebe9); color: var(--color-accent, #2f5d57); }"
+    },
+    {
+      "name": "Forme d'onde",
+      "kind": "custom",
+      "refersTo": "waveform",
+      "description": "Signature : cinq barres vert mousse qui pulsent — indicateur universel de traitement.",
+      "html": "<div class=\"ds-waveform\" aria-hidden=\"true\"><span></span><span></span><span></span><span></span><span></span></div>",
+      "css": ".ds-waveform { display: inline-flex; align-items: center; gap: 3px; height: 20px; } .ds-waveform span { display: block; width: 3px; border-radius: 2px; background: var(--color-accent, #2f5d57); animation: ds-bounce 0.9s ease-in-out infinite; } .ds-waveform span:nth-child(2) { animation-delay: 0.12s; } .ds-waveform span:nth-child(3) { animation-delay: 0.24s; } .ds-waveform span:nth-child(4) { animation-delay: 0.36s; } .ds-waveform span:nth-child(5) { animation-delay: 0.48s; } @keyframes ds-bounce { 0%, 100% { height: 30%; } 50% { height: 100%; } }"
+    },
+    {
+      "name": "Barre de progression",
+      "kind": "custom",
+      "refersTo": "progress",
+      "description": "Piste enfoncée, remplissage vert mousse, transition de largeur 0,4 s.",
+      "html": "<div class=\"ds-progress\"><div class=\"ds-progress-fill\" style=\"width: 42%\"></div></div>",
+      "css": ".ds-progress { height: 6px; border-radius: 999px; background: var(--color-surface-sunken, #edece7); overflow: hidden; } .ds-progress-fill { height: 100%; border-radius: 999px; background: var(--color-accent, #2f5d57); transform-origin: left center; transform: scaleX(var(--progress, 0)); transition: transform 0.4s ease; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "L'Atelier local",
+    "overview": "TransTooLing se présente comme un atelier sobre et bien rangé : des surfaces papier chaudes, des outils précis toujours à la même place, et une couleur — le vert mousse — réservée aux actions et aux états positifs. Rien ne hurle, tout est prévisible ; l'utilisateur vient faire un travail, pas vivre une expérience. La densité est faible (une action principale par vue), la hiérarchie repose sur la typographie et l'aération plutôt que sur la couleur ou les ombres. La voix des données est distincte de la voix de l'interface : IBM Plex Mono porte identifiants, noms de modèles, dates, tailles et états, comme les étiquettes d'un atelier ; Space Grotesk porte les phrases. Le composant signature est la forme d'onde — cinq barres verticales qui pulsent dès qu'un traitement est en cours — déclinée de la marque au dashboard.",
+    "keyCharacteristics": [
+      "Surfaces papier chaudes et plates ; profondeur par tons, presque jamais par ombres",
+      "Une seule couleur d'expression : le vert mousse, rare et réservé (actions, actif, terminé)",
+      "Deux voix typographiques : Space Grotesk pour l'humain, IBM Plex Mono pour la donnée",
+      "La forme d'onde comme signature animée du travail en cours",
+      "Composants sobres et rassurants : transitions douces (0,15 s), rien ne surprend"
+    ],
+    "rules": [
+      { "name": "La règle de la couleur rare", "body": "Le vert mousse couvre au plus ~10 % d'un écran. S'il devient décoratif, il cesse d'être un signal.", "section": "colors" },
+      { "name": "La règle des deux voix", "body": "Toute valeur mesurable ou technique (nom de modèle, identifiant, timestamp, taille) passe en IBM Plex Mono ; toute phrase passe en Space Grotesk. Jamais l'inverse.", "section": "typography" },
+      { "name": "La règle du plat au repos", "body": "Aucune ombre n'apparaît en réponse à un état (survol, focus). Les états se marquent par le ton ou la couleur, jamais par une élévation.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do garder le vert mousse minoritaire : actions, actif, terminé — rien d'autre.",
+      "Do passer toute donnée technique en IBM Plex Mono (règle des deux voix).",
+      "Do marquer les états par le ton ou une couleur de statut, avec des transitions de 0,15 s.",
+      "Do utiliser la forme d'onde comme unique indicateur d'attente animée.",
+      "Do conserver l'unique ombre ambiante pour les cartes et une seule action principale par vue."
+    ],
+    "donts": [
+      "Don't introduire une deuxième couleur d'expression, un dégradé ou une ombre portée d'état.",
+      "Don't mettre du texte long en IBM Plex Mono — le mono est réservé aux valeurs courtes.",
+      "Don't superposer les modales ; une seule à la fois (déjà le cas).",
+      "Don't animer autre chose que la forme d'onde, la largeur des barres de progression et les transitions de couleur de 0,15 s."
+    ]
+  }
+}
