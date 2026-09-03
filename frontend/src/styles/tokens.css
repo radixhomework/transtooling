@@ -1,3 +1,7 @@
+/* Polices embarquées localement (latin + latin-ext) : aucune requête
+   externe, cohérent avec le traitement 100 % local du produit. */
+@import "./fonts.css";
+
 :root {
   /* --- Couleurs (charte radixhomework.github.io) --- */
   --color-bg: #fcfcfa;
