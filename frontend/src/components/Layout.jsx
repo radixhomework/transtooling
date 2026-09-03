@@ -16,11 +16,7 @@ export default function Layout() {
       <header className="app-header">
         <div className="app-header-inner">
           <div className="app-brand">
-            <span className="app-brand-mark" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </span>
+            <img className="app-brand-logo" src="/logo-96.png" alt="" aria-hidden="true" />
             <span className="app-brand-name">TransTooLing</span>
           </div>
 

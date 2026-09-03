@@ -1,46 +1,49 @@
 ---
 name: TransTooLing
-description: Atelier local de transcription et de traduction — confidentiel par architecture.
+description: Atelier local de transcription et de traduction — charte éditoriale radixhomework.
 colors:
-  accent: "#2f5d57"
-  accent-hover: "#244844"
-  accent-soft: "#e2ebe9"
-  bg: "#f6f5f2"
-  surface: "#ffffff"
-  surface-sunken: "#edece7"
-  ink: "#1b211f"
-  ink-soft: "#4b524f"
-  ink-faint: "#8a908d"
-  border: "#dedad2"
-  border-strong: "#c7c2b8"
-  status-pending: "#b8863a"
-  status-pending-soft: "#f5ead4"
-  status-done: "#2f5d57"
-  status-done-soft: "#e2ebe9"
-  status-error: "#a24c3d"
-  status-error-soft: "#f6e2de"
+  accent: "#4D5947"
+  accent-hover: "#3F4A3B"
+  accent-soft: "#e3e7dd"
+  copper: "#9A7656"
+  copper-soft: "#efe6dc"
+  bg: "#fcfcfa"
+  surface: "#fdfaf3"
+  surface-sunken: "#eae5d8"
+  parchment: "#d8d0bd"
+  ink: "#1E211C"
+  ink-soft: "#76604E"
+  ink-faint: "#a18f7c"
+  border: "rgba(30, 33, 28, 0.2)"
+  border-strong: "rgba(30, 33, 28, 0.4)"
+  status-pending: "#9A7656"
+  status-pending-soft: "#efe6dc"
+  status-done: "#4D5947"
+  status-done-soft: "#e3e7dd"
+  status-error: "#8A5E61"
+  status-error-soft: "#efe1e0"
 typography:
-  title:
-    fontFamily: "Space Grotesk, Segoe UI, sans-serif"
-    fontSize: "1.6rem"
+  display:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "1.85rem"
     fontWeight: 600
-    lineHeight: 1.2
-    letterSpacing: "-0.01em"
+    lineHeight: 1.15
+    letterSpacing: "0.01em"
   body:
-    fontFamily: "Space Grotesk, Segoe UI, sans-serif"
+    fontFamily: "Source Sans 3, Segoe UI, sans-serif"
     fontSize: "0.95rem"
     fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: 1.6
   label:
     fontFamily: "IBM Plex Mono, SFMono-Regular, Consolas, monospace"
-    fontSize: "0.72rem"
+    fontSize: "0.68rem"
     fontWeight: 500
     lineHeight: 1.2
-    letterSpacing: "0.02em"
+    letterSpacing: "0.06em"
 rounded:
-  sm: "6px"
-  md: "10px"
-  lg: "16px"
+  sm: "0"
+  md: "0"
+  lg: "0"
 spacing:
   sm: "8px"
   md: "16px"
@@ -48,21 +51,21 @@ spacing:
 components:
   button-primary:
     backgroundColor: "{colors.accent}"
-    textColor: "#ffffff"
+    textColor: "{colors.surface}"
     rounded: "{rounded.sm}"
-    padding: "10px 16px"
+    padding: "9px 16px"
   button-primary-hover:
     backgroundColor: "{colors.accent-hover}"
   button-secondary:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "transparent"
     textColor: "{colors.ink}"
     rounded: "{rounded.sm}"
-    padding: "10px 16px"
+    padding: "9px 16px"
   button-danger:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "transparent"
     textColor: "{colors.status-error}"
     rounded: "{rounded.sm}"
-    padding: "10px 16px"
+    padding: "9px 16px"
   card:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
@@ -71,8 +74,8 @@ components:
   badge:
     backgroundColor: "{colors.accent-soft}"
     textColor: "{colors.accent}"
-    rounded: "999px"
-    padding: "4px 10px"
+    rounded: "0"
+    padding: "3px 8px"
   input:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
@@ -84,184 +87,191 @@ components:
 
 ## Overview
 
-**Creative North Star: "L'Atelier local"**
+**Creative North Star: "L'atelier qui prend racine"**
 
-TransTooLing se présente comme un atelier sobre et bien rangé : des surfaces
-papier chaudes, des outils précis toujours à la même place, et une couleur —
-le vert mousse — réservée aux actions et aux états positifs. Rien ne hurle,
-tout est prévisible ; l'utilisateur vient faire un travail, pas vivre une
-expérience. La densité est faible (une action principale par vue), la
-hiérarchie repose sur la typographie et l'aération plutôt que sur la couleur
-ou les ombres.
+TransTooLing adopte la charte éditoriale de radixhomework.github.io : un
+atelier personnel aux couleurs de terre — noir racine, ivoire, vert mousse,
+cuivre patiné — posé sur des surfaces de papier chaud. La typographie mène :
+Cormorant Garamond porte les titres en capitales espacées, comme le fronton
+d'un atelier ; Source Sans 3 porte les phrases ; IBM Plex Mono reste la voix
+discrète des données (identifiants, modèles, tailles, dates). Le logo —
+emblème sombre cerclé — remplace l'ancienne marque à barres dans l'en-tête,
+la page de connexion et le favicon.
 
-La voix des données est distincte de la voix de l'interface : IBM Plex Mono
-porte identifiants, noms de modèles, dates, tailles et états, comme les
-étiquettes d'un atelier ; Space Grotesk porte les phrases. Le composant
-signature est la forme d'onde — cinq barres verticales qui pulsent dès qu'un
-traitement est en cours — déclinée de la marque au dashboard.
+Le langage est éditorial et plat : angles droits partout, aucune ombre, des
+bordures fines noir racine semi-transparentes pour séparer les surfaces. La
+couleur est rare — le vert mousse pour agir, le cuivre pour les attentes et
+les survols de liens, le rose fané pour les erreurs. La forme d'onde reste
+le seul indicateur animé de traitement.
 
 **Key Characteristics:**
-- Surfaces papier chaudes et plates ; profondeur par tons, presque jamais par ombres
-- Une seule couleur d'expression : le vert mousse, rare et réservé (actions, actif, terminé)
-- Deux voix typographiques : Space Grotesk pour l'humain, IBM Plex Mono pour la donnée
-- La forme d'onde comme signature animée du travail en cours
-- Composants sobres et rassurants : transitions douces (0,15 s), rien ne surprend
+- Charte radixhomework : noir racine, ivoire, vert mousse, cuivre patiné, rose fané, parchemin
+- Cormorant Garamond en capitales espacées pour titres, marque et navigation ; Source Sans 3 pour le corps
+- Angles droits partout, aucune ombre : la séparation se fait par bordures fines
+- Logo emblème (logo-96/64/32.png) dans l'en-tête, la connexion et le favicon
+- IBM Plex Mono reste la voix des données ; la forme d'onde reste l'indicateur de traitement
 
 ## Colors
 
-Palette resserrée d'atelier : papier chaud, encres grises, un vert mousse
-artisanal et trois teintes d'état factuelles.
+Palette de terre de la charte radixhomework : deux papiers, un noir racine,
+trois accents naturels (mousse, cuivre, rose fané) et un parchemin de
+profondeur.
 
 ### Primary
-- **Vert mousse** (#2f5d57) : la seule couleur d'expression. Boutons
-  primaires, liens, état actif de navigation, focus, forme d'onde, statut
-  « terminé ». Sa rareté est sa force.
-- **Vert mousse profond** (#244844) : unique variante, au survol du bouton primaire.
-- **Vert mousse pâle** (#e2ebe9) : fond des badges et de l'état actif de
-  navigation — la voix douce du vert.
+- **Vert mousse** (#4D5947) : la couleur d'action — boutons primaires,
+  liens, état actif de navigation, focus, forme d'onde, statut « terminé ».
+- **Vert mousse profond** (#3F4A3B) : unique variante, au survol du bouton primaire.
+- **Vert mousse voilé** (#e3e7dd) : fond des badges et fonds doux verts.
 
-### Neutral
-- **Papier chaud** (#f6f5f2) : fond de page, ton dominant de l'atelier.
-- **Surface blanche** (#ffffff) : cartes, en-tête, champs.
-- **Surface enfoncée** (#edece7) : pistes de progression, onglets inactifs,
-  textes préformatés — la profondeur par ton, pas par ombre.
-- **Encre** (#1b211f) : texte principal.
-- **Encre douce** (#4b524f) : texte secondaire, navigation au repos.
-- **Encre pâle** (#8a908d) : métadonnées, dates, légendes.
-- **Bord chaud** (#dedad2) : séparateurs, bordures de cartes.
-- **Bord franc** (#c7c2b8) : bordures de champs et de boutons secondaires.
+### Secondary
+- **Cuivre patiné** (#9A7656) : accent secondaire — statut « en attente /
+  en cours / annulation », survol des liens. Avec son voile (#efe6dc).
 
 ### Tertiary
-- **Ambre d'attente** (#b8863a sur #f5ead4) : en cours, en attente.
-- **Brique d'erreur** (#a24c3d sur #f6e2de) : erreurs, suppression.
+- **Rose fané** (#8A5E61) : erreurs et actions destructrices, avec son
+  voile (#efe1e0).
+
+### Neutral
+- **Papier** (#fcfcfa) : fond de page.
+- **Ivoire** (#fdfaf3) : surface des cartes, en-tête, champs.
+- **Parchemin** (#d8d0bd) et sa demi-teinte (#eae5d8) : surfaces enfoncées,
+  pistes de progression, onglets inactifs, textes préformatés.
+- **Noir racine** (#1E211C) : texte principal ; ses bordures
+  semi-transparentes (20 % / 40 %) séparent toutes les surfaces.
+- **Brun terre** (#76604E) : texte secondaire.
+- **Brun pâle** (#a18f7c) : métadonnées, légendes.
 
 ### Named Rules
 **La règle de la couleur rare.** Le vert mousse couvre au plus ~10 % d'un
-écran. S'il devient décoratif, il cesse d'être un signal.
+écran ; le cuivre et le rose fané ne sont que des états. Rien de décoratif.
 
 ## Typography
 
-**Display/Title Font:** Space Grotesk (Segoe UI, sans-serif)
-**Body Font:** Space Grotesk (Segoe UI, sans-serif)
+**Display Font:** Cormorant Garamond (Georgia, serif)
+**Body Font:** Source Sans 3 (Segoe UI, sans-serif)
 **Label/Mono Font:** IBM Plex Mono (SFMono-Regular, Consolas, monospace)
 
-**Character:** Un grotesque contemporain légèrement technique pour les
-phrases, doublé d'un mono sobre pour la donnée — l'étiquette et l'outil,
-pas la vitrine.
+**Character:** Un garamond contemporain en capitales espacées pour le
+fronton, un sans humaniste pour le travail quotidien, un mono sobre pour
+les mesures — l'atelier et son registre.
 
 ### Hierarchy
-- **Title** (600, 1,6 rem, 1,2, letter-spacing -0,01 em) : titre unique de
-  chaque page (h1).
-- **Body** (400, 0,95 rem, 1,5) : paragraphes, descriptions, libellés de
-  formulaires (0,8–0,88 rem pour les secondaires).
-- **Label** (500, 0,72 rem, letter-spacing 0,02 em, MAJUSCULES) : badges,
-  en-têtes de tableaux, formats de fichiers, identifiants, tailles, dates —
-  tout ce qui est donnée.
+- **Display** (600, 1,85 rem, 1,15) : titre unique de chaque page (h1) ;
+  2 rem en capitales espacées (0,06 em) sur la page de connexion ; marque
+  en-tête en 1,15 rem capitales (0,08 em).
+- **Body** (400, 0,95 rem, 1,6) : paragraphes, descriptions, formulaires.
+- **Label** (600, 0,72–0,78 rem, letter-spacing 0,06–0,08 em, MAJUSCULES) :
+  boutons, navigation, en-têtes de tableaux, libellés de champs — la
+  voix « registre » de la charte, en Source Sans 3.
+- **Data** (500, 0,68–0,72 rem, letter-spacing 0,06 em, MAJUSCULES) : badges
+  et valeurs techniques, en IBM Plex Mono.
 
 ### Named Rules
 **La règle des deux voix.** Toute valeur mesurable ou technique (nom de
 modèle, identifiant, timestamp, taille) passe en IBM Plex Mono ; toute
-phrase passe en Space Grotesk. Jamais l'inverse.
+phrase passe en Source Sans 3. Jamais l'inverse.
 
 ## Layout
 
-Coque applicative unique : en-tête sticky (64 px, surface blanche, bord
-inférieur) contenant marque, navigation et compte ; contenu centré
-(max-width 1040 px, padding 40 px 24 px 80 px). Chaque page est une colon
-flex avec un rythme de 24 px entre sections. Les grilles de cartes
-(modèles, utilisateurs) sont en auto-fill minmax(220 px, 1 fr). Sous
-720 px, l'en-tête s'enveloppe et la navigation passe en défilement
-horizontal pleine largeur. Les tableaux restent des tableaux — pas de
-transformation en cartes sur mobile à ce jour.
+Coque applicative inchangée : en-tête sticky (64 px, ivoire, bord inférieur)
+avec logo + marque + navigation + compte ; contenu centré (max-width
+1040 px, padding 40 px 24 px 80 px) ; colonnes flex au rythme de 24 px ;
+grilles de cartes en auto-fill minmax(220 px, 1 fr). Sous 720 px, l'en-tête
+s'enveloppe et la navigation défile horizontalement. La navigation est
+désormais textuelle : capitales espacées, soulignement bas à l'état actif —
+plus de pastilles de fond.
 
 ## Elevation & Depth
 
-**Plat par défaut.** La profondeur vient des tons (surface → surface
-enfoncée) et de bordures fines ; une seule ombre existe dans tout le
-système, ambiante et quasi imperceptible, sous les cartes
-(`0 1px 2px rgba(27,33,31,0.04), 0 4px 16px rgba(27,33,31,0.05)`). L'en-tête
-sticky n'ombre pas : il se contente d'un bord.
+**Totalement plat.** Aucune ombre n'existe dans le système ; la profondeur
+vient du contraste papier/ivoire/parchemin et de bordures fines noir
+racine semi-transparentes. Les états ne soulèvent jamais rien.
 
 ### Named Rules
-**La règle du plat au repos.** Aucune ombre n'apparaît en réponse à un
-état (survol, focus). Les états se marquent par le ton ou la couleur,
-jamais par une élévation.
+**La règle du plat absolu.** Interdiction d'ajouter une ombre, un dégradé
+d'état ou une élévation ; les états passent par la couleur (bord, texte,
+fond voilé), toujours en 0,2 s.
 
 ## Shapes
 
-Rayons doux et mesurés : 6 px (boutons, champs, badges d'onglet), 10 px
-(menus, onglets), 16 px (cartes, modales) ; pilule complète (999 px)
-uniquement pour les badges de statut. Bordures 1 px en gris chaud partout
-où deux surfaces se rencontrent. La géométrie signature est verticale et
-fine : les barres de la forme d'onde et de la marque (2–4 px de large,
-coins 2 px) — un motif d'égaliseur discret qui relie la marque au travail.
+Angles droits partout (rayons 0) — le seul arrondi résiduel est invisible
+(2 px sur les barres 3 px de la forme d'onde). Les badges sont des étiquettes
+carrées à filet invisible, pas des pilules. La géométrie signature est le
+cercle de l'emblème-logo, contraste délibéré dans un monde d'angles droits.
 
 ## Components
 
 ### Buttons
-- **Shape:** coins doux (6 px)
-- **Primary:** vert mousse plein, texte blanc, padding 10 px 16 px ;
-  variante compacte 6 px 12 px (0,8 rem)
-- **Hover / Focus:** assombrissement vers le vert profond (0,15 s) ;
-  focus visible : contour 2 px vert mousse, décalé de 2 px
-- **Secondary:** surface blanche, bord franc, texte encre
-- **Danger:** surface blanche, bord et texte brique ; fond brique pâle au survol
-- **Disabled:** opacité 0,5, curseur interdit
+- **Shape:** angles droits
+- **Primary:** vert mousse plein, texte ivoire, capitales espacées 0,78 rem
+  (600, 0,06 em), padding 9 px 16 px ; variante compacte 6 px 12 px
+- **Hover / Focus:** vert profond (0,2 s) ; focus visible : contour 2 px
+  vert mousse, décalé de 2 px
+- **Secondary:** transparent, bord noir racine 40 %, texte encre ; survol :
+  bord et texte vert mousse
+- **Danger:** transparent, bord et texte rose fané ; survol : fond rose voilé
+- **Disabled:** opacité 0,5
 
 ### Chips / Badges
-- **Style:** pilule (999 px), IBM Plex Mono 0,72 rem majuscules ; fond doux
-  + texte coloré : vert mousse pâle/vert (terminé, actif), ambre pâle/ambre
-  (attente, en cours, annulation), brique pâle/brique (erreur), enfoncé/encre
-  douce (annulé)
-- **Comportement:** le badge « en cours » embarque la forme d'onde taille sm ;
-  il peut afficher un pourcentage (« En cours · 42 % »)
+- **Style:** étiquette carrée, IBM Plex Mono 0,68 rem capitales (0,06 em) ;
+  fond voilé + texte coloré : mousse (terminé/actif), cuivre (attente,
+  en cours, annulation), rose fané (erreur), parchemin (annulé : fond
+  demi-teinte, texte brun terre)
+- **Comportement:** le badge « en cours » embarque la forme d'onde sm et
+  peut afficher un pourcentage (« En cours · 42 % »)
 
 ### Cards / Containers
-- **Corner Style:** 16 px
-- **Background:** surface blanche sur fond papier
-- **Shadow Strategy:** l'unique ombre ambiante (voir Elevation)
-- **Border:** 1 px bord chaud ; bord vert mousse sur la carte « par défaut »
+- **Corner Style:** angles droits
+- **Background:** ivoire sur papier
+- **Shadow Strategy:** aucune (règle du plat absolu)
+- **Border:** 1 px noir racine 20 % ; bord vert mousse sur la carte
+  « par défaut » des modèles
 - **Internal Padding:** 16–24 px, flex column, écart 12 px
 
 ### Inputs / Fields
-- **Style:** surface blanche, bord franc 1 px, coins 6 px, padding 10 px 12 px
-- **Focus:** bord qui passe au vert mousse (pas de halo)
-- **Labels:** 0,8 rem, encre douce, au-dessus du champ
+- **Style:** ivoire, bord noir racine 40 %, angles droits, padding 10 px 12 px
+- **Focus:** bord vert mousse (pas de halo)
+- **Labels:** 0,8 rem, 600, brun terre, au-dessus du champ
 
 ### Navigation
-- Liens texte 0,88 rem (500), encre douce au repos, fond enfoncé + encre au
-  survol, fond vert mousse pâle + texte vert à l'état actif ; coins 6 px,
-  padding 8 px 12 px
+- Liens texte en capitales espacées (0,78 rem, 600, 0,08 em) : encre au
+  repos, vert mousse au survol ; actif : vert mousse + soulignement bas
+  1 px ; padding 8 px 2 px
+
+### Logo / Brand
+Emblème fourni (frontend/public/logo.png, décliné en 96/64/32 px) :
+marque sombre sur transparence, avec anneau. En-tête : 34 px à gauche du
+nom TRANSTOOLING (Cormorant 600, 1,15 rem, 0,08 em). Page de connexion :
+64 px au-dessus du titre. Favicon : 64/32 px.
 
 ### Waveform (composant signature)
-Cinq barres verticales vert mousse (3 px, coins 2 px) qui pulsent en
-oscillation douce (0,9 s, ease-in-out, hauteur 25 % ↔ 100 %, décalage par
-barre). Trois tailles : sm (14 px, badges), md (20 px), lg (32 px, envoi).
-C'est l'indicateur universel de traitement — il remplace tout spinner.
-Désactivée sous `prefers-reduced-motion`.
+Cinq barres verticales vert mousse (3 px) qui pulsent en oscillation douce
+(0,9 s, ease-in-out, hauteur 25 % ↔ 100 %, décalage par barre). Trois
+tailles : sm (14 px, badges), md (20 px), lg (32 px). Unique indicateur
+d'attente animé ; désactivée sous prefers-reduced-motion.
 
 ### Progress bar
-Piste enfoncée (6 px, pilule) et remplissage vert mousse mis à l'échelle
-horizontalement (scaleX, 0,4 s — sans reflow) ; pourcentage en IBM Plex Mono
-0,72 rem. Utilisée pour la progression de transcription et l'envoi d'archives.
+Piste parchemin demi-teinte (6 px) et remplissage vert mousse mis à
+l'échelle horizontalement (scaleX, 0,4 s — sans reflow) ; pourcentage en
+IBM Plex Mono 0,72 rem.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** garder le vert mousse minoritaire : actions, actif, terminé —
-  rien d'autre.
+- **Do** garder le vert mousse minoritaire : actions, actif, terminé.
 - **Do** passer toute donnée technique en IBM Plex Mono (règle des deux voix).
-- **Do** marquer les états par le ton ou une couleur de statut, avec des
-  transitions de 0,15 s.
+- **Do** séparer les surfaces par des bordures fines noir racine
+  semi-transparentes, jamais par des ombres.
+- **Do** utiliser le Cormorant en capitales espacées pour titres, marque et
+  navigation — c'est le fronton de la charte.
 - **Do** utiliser la forme d'onde comme unique indicateur d'attente animée.
-- **Do** conserver l'unique ombre ambiante pour les cartes et une seule
-  action principale par vue.
 
 ### Don't:
-- **Don't** introduire une deuxième couleur d'expression, un dégradé ou une
-  ombre portée d'état.
+- **Don't** introduire une ombre, un dégradé, un arrondi ou une deuxième
+  couleur d'expression.
 - **Don't** mettre du texte long en IBM Plex Mono — le mono est réservé aux
   valeurs courtes.
-- **Don't** superposer les modales ; une seule à la fois (déjà le cas).
-- **Don't** animer autre chose que la forme d'onde, la largeur des barres de
-  progression et les transitions de couleur de 0,15 s.
+- **Don't** réintroduire les pastilles de fond dans la navigation ou des
+  pilules de badge.
+- **Don't** animer autre chose que la forme d'onde, le scaleX des barres de
+  progression et les transitions de couleur de 0,2 s.

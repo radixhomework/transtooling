@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import Waveform from "../components/Waveform.jsx";
 import "./LoginPage.css";
 
 export default function LoginPage() {
@@ -37,7 +36,7 @@ export default function LoginPage() {
     <div className="login-page">
       <div className="login-card card">
         <div className="login-mark" aria-hidden="true">
-          <Waveform size="lg" />
+          <img src="/logo-96.png" alt="" />
         </div>
         <h1>TransTooLing</h1>
 

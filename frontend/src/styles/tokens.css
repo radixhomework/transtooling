@@ -1,34 +1,41 @@
 :root {
-  /* --- Couleurs --- */
-  --color-bg: #f6f5f2;
-  --color-surface: #ffffff;
-  --color-surface-sunken: #edece7;
-  --color-ink: #1b211f;
-  --color-ink-soft: #4b524f;
-  --color-ink-faint: #8a908d;
-  --color-border: #dedad2;
-  --color-border-strong: #c7c2b8;
+  /* --- Couleurs (charte radixhomework.github.io) --- */
+  --color-bg: #fcfcfa;
+  --color-surface: #fdfaf3; /* ivoire */
+  --color-surface-sunken: #eae5d8; /* parchemin à demi-teinte */
+  --color-parchment: #d8d0bd;
 
-  --color-accent: #2f5d57;
-  --color-accent-hover: #244844;
-  --color-accent-soft: #e2ebe9;
+  --color-ink: #1e211c; /* noir racine */
+  --color-ink-soft: #76604e; /* brun terre */
+  --color-ink-faint: #a18f7c;
 
-  --color-status-pending: #b8863a;
-  --color-status-pending-soft: #f5ead4;
-  --color-status-done: #2f5d57;
-  --color-status-done-soft: #e2ebe9;
-  --color-status-error: #a24c3d;
-  --color-status-error-soft: #f6e2de;
+  --color-border: rgba(30, 33, 28, 0.2);
+  --color-border-strong: rgba(30, 33, 28, 0.4);
+
+  --color-accent: #4d5947; /* vert mousse */
+  --color-accent-hover: #3f4a3b;
+  --color-accent-soft: #e3e7dd;
+
+  --color-copper: #9a7656; /* cuivre patiné : accent secondaire */
+  --color-copper-soft: #efe6dc;
+
+  --color-status-pending: #9a7656;
+  --color-status-pending-soft: #efe6dc;
+  --color-status-done: #4d5947;
+  --color-status-done-soft: #e3e7dd;
+  --color-status-error: #8a5e61; /* rose fané */
+  --color-status-error-soft: #efe1e0;
 
   /* --- Typographie --- */
-  --font-ui: "Space Grotesk", "Segoe UI", sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-ui: "Source Sans 3", "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 
-  /* --- Espacement / forme --- */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --shadow-card: 0 1px 2px rgba(27, 33, 31, 0.04), 0 4px 16px rgba(27, 33, 31, 0.05);
+  /* --- Espacement / forme (langage éditorial : angles droits) --- */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --shadow-card: none;
 }
 
 * {
@@ -46,22 +53,24 @@ body {
   background: var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-ui);
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
 h1,
 h2,
 h3 {
-  font-family: var(--font-ui);
+  font-family: var(--font-display);
   font-weight: 600;
   margin: 0;
-  letter-spacing: -0.01em;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
 }
 
 p {
   margin: 0;
   color: var(--color-ink-soft);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 button {
@@ -69,7 +78,8 @@ button {
 }
 
 input,
-select {
+select,
+textarea {
   font-family: var(--font-ui);
 }
 
@@ -80,6 +90,12 @@ code,
 
 a {
   color: var(--color-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--color-copper);
 }
 
 :focus-visible {
@@ -104,11 +120,13 @@ a {
   gap: 8px;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  padding: 10px 16px;
-  font-size: 0.9rem;
-  font-weight: 500;
+  padding: 9px 16px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
 }
 
 .btn:disabled {
@@ -118,23 +136,24 @@ a {
 
 .btn-primary {
   background: var(--color-accent);
-  color: white;
+  color: var(--color-surface);
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--color-accent-hover);
 }
 
 .btn-secondary {
-  background: var(--color-surface);
+  background: transparent;
   border-color: var(--color-border-strong);
   color: var(--color-ink);
 }
 .btn-secondary:hover:not(:disabled) {
-  border-color: var(--color-ink-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .btn-danger {
-  background: var(--color-surface);
+  background: transparent;
   border-color: var(--color-status-error);
   color: var(--color-status-error);
 }
@@ -144,7 +163,7 @@ a {
 
 .btn-sm {
   padding: 6px 12px;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
 }
 
 .card {
@@ -162,12 +181,13 @@ a {
 
 .field label {
   font-size: 0.8rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-ink-soft);
 }
 
 .field input,
-.field select {
+.field select,
+.field textarea {
   padding: 10px 12px;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
@@ -177,7 +197,8 @@ a {
 }
 
 .field input:focus,
-.field select:focus {
+.field select:focus,
+.field textarea:focus {
   border-color: var(--color-accent);
 }
 
@@ -186,16 +207,21 @@ a {
   font-size: 0.85rem;
 }
 
+.success-text {
+  color: var(--color-accent);
+  font-size: 0.85rem;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
+  padding: 3px 8px;
+  border: 1px solid transparent;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -212,10 +238,6 @@ a {
   background: var(--color-status-pending-soft);
   color: var(--color-status-pending);
 }
-.badge-cancelled {
-  background: var(--color-surface-sunken);
-  color: var(--color-ink-soft);
-}
 .badge-done {
   background: var(--color-status-done-soft);
   color: var(--color-status-done);
@@ -224,35 +246,8 @@ a {
   background: var(--color-status-error-soft);
   color: var(--color-status-error);
 }
-
-/* Barre de progression (téléchargement de modèle, transcription en cours) */
-.progress {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.progress-bar {
-  height: 6px;
-  border-radius: 999px;
+.badge-cancelled {
   background: var(--color-surface-sunken);
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: var(--color-accent);
-  transform-origin: left center;
-  /* scaleX (et non width) : composition animée sans reflow, la progression
-     attendue est posée en variable par le composant (0 → 1). */
-  transform: scaleX(var(--progress, 0));
-  transition: transform 0.4s ease;
-}
-
-.progress-label {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
   color: var(--color-ink-soft);
 }
 
@@ -265,11 +260,11 @@ a {
   text-align: left;
   font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-ink-faint);
-  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-soft);
+  font-weight: 600;
   padding: 10px 14px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border-strong);
 }
 
 .table td {
@@ -287,4 +282,33 @@ a {
   text-align: center;
   padding: 48px 24px;
   color: var(--color-ink-faint);
+}
+
+/* Barre de progression (transcription en cours) */
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: var(--color-surface-sunken);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  transform-origin: left center;
+  /* scaleX (et non width) : composition animée sans reflow, la progression
+     attendue est posée en variable par le composant (0 → 1). */
+  transform: scaleX(var(--progress, 0));
+  transition: transform 0.4s ease;
+}
+
+.progress-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-ink-soft);
 }

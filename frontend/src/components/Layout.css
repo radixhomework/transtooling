@@ -26,56 +26,44 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  font-family: var(--font-display);
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.app-brand-mark {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 18px;
-}
-.app-brand-mark span {
+.app-brand-logo {
   display: block;
-  width: 3px;
-  border-radius: 2px;
-  background: var(--color-accent);
-}
-.app-brand-mark span:nth-child(1) {
-  height: 60%;
-}
-.app-brand-mark span:nth-child(2) {
-  height: 100%;
-}
-.app-brand-mark span:nth-child(3) {
-  height: 40%;
+  width: 34px;
+  height: 34px;
 }
 
 .app-nav {
   display: flex;
-  gap: 4px;
+  gap: 18px;
   flex: 1;
 }
 
 .app-nav a {
-  color: var(--color-ink-soft);
+  color: var(--color-ink);
   text-decoration: none;
-  font-size: 0.88rem;
-  font-weight: 500;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 2px;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
 }
 
 .app-nav a:hover {
-  background: var(--color-surface-sunken);
-  color: var(--color-ink);
+  color: var(--color-accent);
 }
 
 .app-nav a.is-active {
-  background: var(--color-accent-soft);
   color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
 }
 
 .app-account {
