@@ -1,0 +1,108 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font-size",
+        "value": "1.15rem",
+        "createdAt": "2026-09-04T12:35:15.000Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.78rem",
+        "createdAt": "2026-09-04T12:35:15.087Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.72rem",
+        "createdAt": "2026-09-04T12:35:15.162Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.8rem",
+        "createdAt": "2026-09-04T12:35:15.240Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.88rem",
+        "createdAt": "2026-09-04T12:35:15.320Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.85rem",
+        "createdAt": "2026-09-04T12:35:15.396Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.76rem",
+        "createdAt": "2026-09-04T12:35:15.472Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.75rem",
+        "createdAt": "2026-09-04T12:35:15.548Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "2rem",
+        "createdAt": "2026-09-04T12:36:16.732Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "1.05rem",
+        "createdAt": "2026-09-04T12:36:16.837Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "1rem",
+        "createdAt": "2026-09-04T12:38:27.034Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.9rem",
+        "createdAt": "2026-09-04T12:38:27.113Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.82rem",
+        "createdAt": "2026-09-04T12:38:27.190Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "1.35rem",
+        "createdAt": "2026-09-04T12:38:27.340Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "1.6rem",
+        "createdAt": "2026-09-04T12:38:27.490Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "1.85rem",
+        "createdAt": "2026-09-04T12:38:27.567Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.68rem",
+        "createdAt": "2026-09-04T12:38:27.737Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.7rem",
+        "createdAt": "2026-09-04T12:38:27.813Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.95rem",
+        "createdAt": "2026-09-04T12:38:28.281Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.78",
+        "createdAt": "2026-09-04T12:38:28.360Z"
+      }
+    ]
+  }
+}

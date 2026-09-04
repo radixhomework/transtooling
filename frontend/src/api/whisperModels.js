@@ -4,8 +4,8 @@ export function listWhisperModels() {
   return apiClient.get("/admin/whisper-models").then((r) => r.data);
 }
 
-// Modèles utilisables pour une transcription (téléchargés + activés),
-// accessibles à tout utilisateur authentifié (sélecteur d'upload).
+// Models usable for a transcription (downloaded + enabled),
+// available to any authenticated user (upload selector).
 export function listEnabledModels() {
   return apiClient.get("/models").then((r) => r.data);
 }

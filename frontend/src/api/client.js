@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // En production, le reverse proxy Apache -> le conteneur frontend (Nginx)
-// route /api vers le backend. En dev local, VITE_API_BASE_URL est injecté
+// the /api route to the backend. In local dev, VITE_API_BASE_URL is injected
 // au build (voir Dockerfile).
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "/api",

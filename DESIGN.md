@@ -1,6 +1,6 @@
 ---
 name: TransTooLing
-description: Atelier local de transcription et de traduction — charte éditoriale radixhomework.
+description: Local transcription and translation workshop — radixhomework editorial charte.
 colors:
   accent: "#4D5947"
   accent-hover: "#3F4A3B"
@@ -87,63 +87,61 @@ components:
 
 ## Overview
 
-**Creative North Star: "L'atelier qui prend racine"**
+**Creative North Star: "The workshop that takes root"**
 
-TransTooLing adopte la charte éditoriale de radixhomework.github.io : un
-atelier personnel aux couleurs de terre — noir racine, ivoire, vert mousse,
-cuivre patiné — posé sur des surfaces de papier chaud. La typographie mène :
-Cormorant Garamond porte les titres en capitales espacées, comme le fronton
-d'un atelier ; Source Sans 3 porte les phrases ; IBM Plex Mono reste la voix
-discrète des données (identifiants, modèles, tailles, dates). Le logo —
-emblème sombre cerclé — remplace l'ancienne marque à barres dans l'en-tête,
-la page de connexion et le favicon.
+TransTooLing adopts the radixhomework.github.io editorial charte: a
+personal workshop in earth tones — root black, ivory, moss green, patinated
+copper — set on warm paper surfaces. Typography leads: Cormorant Garamond
+carries headings in letter-spaced capitals, like a workshop's facade;
+Source Sans 3 carries sentences; IBM Plex Mono remains the discreet voice
+of data (logins, models, sizes, dates). The logo — a dark ringed emblem —
+replaces the former bar mark in the header, the login page and the
+favicon.
 
-Le langage est éditorial et plat : angles droits partout, aucune ombre, des
-bordures fines noir racine semi-transparentes pour séparer les surfaces. La
-couleur est rare — le vert mousse pour agir, le cuivre pour les attentes et
-les survols de liens, le rose fané pour les erreurs. La forme d'onde reste
-le seul indicateur animé de traitement.
+The language is editorial and flat: square corners everywhere, no shadows,
+thin translucent root-black borders to separate surfaces. Color is rare —
+moss green to act, copper for pending states and link hovers, faded pink
+for errors. The waveform remains the only animated processing indicator.
 
 **Key Characteristics:**
-- Charte radixhomework : noir racine, ivoire, vert mousse, cuivre patiné, rose fané, parchemin
-- Cormorant Garamond en capitales espacées pour titres, marque et navigation ; Source Sans 3 pour le corps
-- Angles droits partout, aucune ombre : la séparation se fait par bordures fines
-- Logo emblème (logo-96/64/32.png) dans l'en-tête, la connexion et le favicon
-- IBM Plex Mono reste la voix des données ; la forme d'onde reste l'indicateur de traitement
+- radixhomework palette: root black, ivory, moss green, patinated copper, faded pink, parchment
+- Cormorant Garamond in letter-spaced capitals for headings, brand and navigation; Source Sans 3 for body
+- Square corners everywhere, no shadows: separation comes from thin borders
+- Emblem logo (logo-96/64/32.png) in the header, login page and favicon
+- IBM Plex Mono remains the data voice; the waveform remains the processing indicator
 
 ## Colors
 
-Palette de terre de la charte radixhomework : deux papiers, un noir racine,
-trois accents naturels (mousse, cuivre, rose fané) et un parchemin de
-profondeur.
+The radixhomework earth palette: two papers, a root black, three natural
+accents (moss, copper, faded pink) and a parchment for depth.
 
 ### Primary
-- **Vert mousse** (#4D5947) : la couleur d'action — boutons primaires,
-  liens, état actif de navigation, focus, forme d'onde, statut « terminé ».
-- **Vert mousse profond** (#3F4A3B) : unique variante, au survol du bouton primaire.
-- **Vert mousse voilé** (#e3e7dd) : fond des badges et fonds doux verts.
+- **Moss green** (#4D5947): the action color — primary buttons, links,
+  active navigation, focus, waveform, "done" status.
+- **Deep moss** (#3F4A3B): single variant, on primary button hover.
+- **Veiled moss** (#e3e7dd): badge backgrounds and soft green fills.
 
 ### Secondary
-- **Cuivre patiné** (#9A7656) : accent secondaire — statut « en attente /
-  en cours / annulation », survol des liens. Avec son voile (#efe6dc).
+- **Patinated copper** (#9A7656): secondary accent — "pending /
+  processing / cancelling" statuses, link hovers. With its veil (#efe6dc).
 
 ### Tertiary
-- **Rose fané** (#8A5E61) : erreurs et actions destructrices, avec son
-  voile (#efe1e0).
+- **Faded pink** (#8A5E61): errors and destructive actions, with its veil
+  (#efe1e0).
 
 ### Neutral
-- **Papier** (#fcfcfa) : fond de page.
-- **Ivoire** (#fdfaf3) : surface des cartes, en-tête, champs.
-- **Parchemin** (#d8d0bd) et sa demi-teinte (#eae5d8) : surfaces enfoncées,
-  pistes de progression, onglets inactifs, textes préformatés.
-- **Noir racine** (#1E211C) : texte principal ; ses bordures
-  semi-transparentes (20 % / 40 %) séparent toutes les surfaces.
-- **Brun terre** (#76604E) : texte secondaire.
-- **Brun pâle** (#a18f7c) : métadonnées, légendes.
+- **Paper** (#fcfcfa): page background.
+- **Ivory** (#fdfaf3): cards, header, inputs.
+- **Parchment** (#d8d0bd) and its half-tone (#eae5d8): sunken surfaces,
+  progress tracks, inactive tabs, preformatted text.
+- **Root black** (#1E211C): main text; its semi-transparent borders
+  (20% / 40%) separate all surfaces.
+- **Earth brown** (#76604E): secondary text.
+- **Pale brown** (#a18f7c): metadata, captions.
 
-### Named Rules
-**La règle de la couleur rare.** Le vert mousse couvre au plus ~10 % d'un
-écran ; le cuivre et le rose fané ne sont que des états. Rien de décoratif.
+### Named Rules (optional, powerful)
+**The Rare Color Rule.** Moss green covers at most ~10% of any screen;
+copper and faded pink are states only. Nothing decorative.
 
 ## Typography
 
@@ -151,127 +149,124 @@ profondeur.
 **Body Font:** Source Sans 3 (Segoe UI, sans-serif)
 **Label/Mono Font:** IBM Plex Mono (SFMono-Regular, Consolas, monospace)
 
-**Character:** Un garamond contemporain en capitales espacées pour le
-fronton, un sans humaniste pour le travail quotidien, un mono sobre pour
-les mesures — l'atelier et son registre.
+**Character:** A contemporary garamond in letter-spaced capitals for the
+facade, a humanist sans for daily work, a sober mono for measurements —
+the workshop and its ledger.
 
 ### Hierarchy
-- **Display** (600, 1,85 rem, 1,15) : titre unique de chaque page (h1) ;
-  2 rem en capitales espacées (0,06 em) sur la page de connexion ; marque
-  en-tête en 1,15 rem capitales (0,08 em).
-- **Body** (400, 0,95 rem, 1,6) : paragraphes, descriptions, formulaires.
-- **Label** (600, 0,72–0,78 rem, letter-spacing 0,06–0,08 em, MAJUSCULES) :
-  boutons, navigation, en-têtes de tableaux, libellés de champs — la
-  voix « registre » de la charte, en Source Sans 3.
-- **Data** (500, 0,68–0,72 rem, letter-spacing 0,06 em, MAJUSCULES) : badges
-  et valeurs techniques, en IBM Plex Mono.
+- **Display** (600, 1.85rem, 1.15): the single page heading (h1); 2rem in
+  letter-spaced capitals (0.06em) on the login page; header brand in
+  1.15rem capitals (0.08em).
+- **Body** (400, 0.95rem, 1.6): paragraphs, descriptions, form fields.
+- **Label** (600, 0.72–0.78rem, letter-spacing 0.06–0.08em, UPPERCASE):
+  buttons, navigation, table headers, field labels — the charte's
+  "ledger" voice, in Source Sans 3.
+- **Data** (500, 0.68–0.72rem, letter-spacing 0.06em, UPPERCASE): badges
+  and technical values, in IBM Plex Mono.
 
-### Named Rules
-**La règle des deux voix.** Toute valeur mesurable ou technique (nom de
-modèle, identifiant, timestamp, taille) passe en IBM Plex Mono ; toute
-phrase passe en Source Sans 3. Jamais l'inverse.
+### Named Rules (optional)
+**The Two Voices Rule.** Any measurable or technical value (model name,
+login, timestamp, size) goes in IBM Plex Mono; any sentence goes in Source
+Sans 3. Never the other way around.
 
 ## Layout
 
-Coque applicative inchangée : en-tête sticky (64 px, ivoire, bord inférieur)
-avec logo + marque + navigation + compte ; contenu centré (max-width
-1040 px, padding 40 px 24 px 80 px) ; colonnes flex au rythme de 24 px ;
-grilles de cartes en auto-fill minmax(220 px, 1 fr). Sous 720 px, l'en-tête
-s'enveloppe et la navigation défile horizontalement. La navigation est
-désormais textuelle : capitales espacées, soulignement bas à l'état actif —
-plus de pastilles de fond.
+Unchanged app shell: sticky header (64px, ivory, bottom border) with logo
++ brand + navigation + account; centered content (max-width 1040px,
+padding 40px 24px 80px); flex columns on a 24px rhythm; card grids as
+auto-fill minmax(220px, 1fr). Below 720px, the header wraps and the
+navigation scrolls horizontally. Navigation is now textual: letter-spaced
+capitals, bottom underline in the active state — no background pills.
 
 ## Elevation & Depth
 
-**Totalement plat.** Aucune ombre n'existe dans le système ; la profondeur
-vient du contraste papier/ivoire/parchemin et de bordures fines noir
-racine semi-transparentes. Les états ne soulèvent jamais rien.
+**Completely flat.** No shadows exist in the system; depth comes from the
+paper/ivory/parchment contrast and thin root-black translucent borders.
+States never lift anything.
 
-### Named Rules
-**La règle du plat absolu.** Interdiction d'ajouter une ombre, un dégradé
-d'état ou une élévation ; les états passent par la couleur (bord, texte,
-fond voilé), toujours en 0,2 s.
+### Named Rules (optional)
+**The Absolutely Flat Rule.** Adding a shadow, a state gradient or an
+elevation is forbidden; states are expressed through color (border, text,
+veiled background), always at 0.2s.
 
 ## Shapes
 
-Angles droits partout (rayons 0) — le seul arrondi résiduel est invisible
-(2 px sur les barres 3 px de la forme d'onde). Les badges sont des étiquettes
-carrées à filet invisible, pas des pilules. La géométrie signature est le
-cercle de l'emblème-logo, contraste délibéré dans un monde d'angles droits.
+Square corners everywhere (radii 0) — the only residual rounding is
+invisible (2px on the waveform's 3px bars). Badges are squared tags with
+an invisible hairline, not pills. The signature geometry is the emblem
+logo's circle, a deliberate contrast in a world of right angles.
 
 ## Components
 
 ### Buttons
-- **Shape:** angles droits
-- **Primary:** vert mousse plein, texte ivoire, capitales espacées 0,78 rem
-  (600, 0,06 em), padding 9 px 16 px ; variante compacte 6 px 12 px
-- **Hover / Focus:** vert profond (0,2 s) ; focus visible : contour 2 px
-  vert mousse, décalé de 2 px
-- **Secondary:** transparent, bord noir racine 40 %, texte encre ; survol :
-  bord et texte vert mousse
-- **Danger:** transparent, bord et texte rose fané ; survol : fond rose voilé
-- **Disabled:** opacité 0,5
+- **Shape:** square corners
+- **Primary:** solid moss green, ivory text, letter-spaced capitals
+  0.78rem (600, 0.06em), padding 9px 16px; compact variant 6px 12px
+- **Hover / Focus:** deep moss (0.2s); visible focus: 2px moss outline,
+  offset 2px
+- **Secondary:** transparent, root-black 40% border, ink text; hover:
+  moss border and text
+- **Danger:** transparent, faded-pink border and text; hover: veiled pink
+  background
+- **Disabled:** opacity 0.5
 
 ### Chips / Badges
-- **Style:** étiquette carrée, IBM Plex Mono 0,68 rem capitales (0,06 em) ;
-  fond voilé + texte coloré : mousse (terminé/actif), cuivre (attente,
-  en cours, annulation), rose fané (erreur), parchemin (annulé : fond
-  demi-teinte, texte brun terre)
-- **Comportement:** le badge « en cours » embarque la forme d'onde sm et
-  peut afficher un pourcentage (« En cours · 42 % »)
+- **Style:** squared tag, IBM Plex Mono 0.68rem capitals (0.06em); veiled
+  background + colored text: moss (done/active), copper (pending,
+  processing, cancelling), faded pink (error), parchment (cancelled:
+  half-tone background, earth-brown text)
+- **Behavior:** the "processing" badge embeds the sm waveform and can show
+  a percentage ("En cours · 42%")
 
 ### Cards / Containers
-- **Corner Style:** angles droits
-- **Background:** ivoire sur papier
-- **Shadow Strategy:** aucune (règle du plat absolu)
-- **Border:** 1 px noir racine 20 % ; bord vert mousse sur la carte
-  « par défaut » des modèles
-- **Internal Padding:** 16–24 px, flex column, écart 12 px
+- **Corner Style:** square corners
+- **Background:** ivory on paper
+- **Shadow Strategy:** none (Absolutely Flat rule)
+- **Border:** 1px root black 20%; moss border on the "default" model card
+- **Internal Padding:** 16–24px, flex column, 12px gap
 
 ### Inputs / Fields
-- **Style:** ivoire, bord noir racine 40 %, angles droits, padding 10 px 12 px
-- **Focus:** bord vert mousse (pas de halo)
-- **Labels:** 0,8 rem, 600, brun terre, au-dessus du champ
+- **Style:** ivory, root-black 40% border, square corners, padding 10px 12px
+- **Focus:** border switches to moss green (no halo)
+- **Labels:** 0.8rem, 600, earth brown, above the field
 
 ### Navigation
-- Liens texte en capitales espacées (0,78 rem, 600, 0,08 em) : encre au
-  repos, vert mousse au survol ; actif : vert mousse + soulignement bas
-  1 px ; padding 8 px 2 px
+- Text links in letter-spaced capitals (0.78rem, 600, 0.08em): ink at
+  rest, moss green on hover; active: moss green + 1px bottom underline;
+  padding 8px 2px
 
 ### Logo / Brand
-Emblème fourni (frontend/public/logo.png, décliné en 96/64/32 px) :
-marque sombre sur transparence, avec anneau. En-tête : 34 px à gauche du
-nom TRANSTOOLING (Cormorant 600, 1,15 rem, 0,08 em). Page de connexion :
-64 px au-dessus du titre. Favicon : 64/32 px.
+Provided emblem (frontend/public/logo.png, declined as 96/64/32 px):
+dark mark on transparency, with a ring. Header: 34px to the left of the
+TRANSTOOLING name (Cormorant 600, 1.15rem, 0.08em). Login page: 64px above
+the title. Favicon: 64/32 px.
 
-### Waveform (composant signature)
-Cinq barres verticales vert mousse (3 px) qui pulsent en oscillation douce
-(0,9 s, ease-in-out, hauteur 25 % ↔ 100 %, décalage par barre). Trois
-tailles : sm (14 px, badges), md (20 px), lg (32 px). Unique indicateur
-d'attente animé ; désactivée sous prefers-reduced-motion.
+### Waveform (signature component)
+Five vertical moss-green bars (3px) pulsing in a soft oscillation (0.9s,
+ease-in-out, height 25% ↔ 100%, staggered per bar). Three sizes: sm (14px,
+badges), md (20px), lg (32px). The only animated waiting indicator;
+disabled under prefers-reduced-motion.
 
 ### Progress bar
-Piste parchemin demi-teinte (6 px) et remplissage vert mousse mis à
-l'échelle horizontalement (scaleX, 0,4 s — sans reflow) ; pourcentage en
-IBM Plex Mono 0,72 rem.
+Half-tone parchment track (6px) and moss-green fill scaled horizontally
+(scaleX, 0.4s — no reflow); percentage in IBM Plex Mono 0.72rem.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** garder le vert mousse minoritaire : actions, actif, terminé.
-- **Do** passer toute donnée technique en IBM Plex Mono (règle des deux voix).
-- **Do** séparer les surfaces par des bordures fines noir racine
-  semi-transparentes, jamais par des ombres.
-- **Do** utiliser le Cormorant en capitales espacées pour titres, marque et
-  navigation — c'est le fronton de la charte.
-- **Do** utiliser la forme d'onde comme unique indicateur d'attente animée.
+- **Do** keep moss green a minority: actions, active, done — nothing else.
+- **Do** put all technical data in IBM Plex Mono (Two Voices rule).
+- **Do** separate surfaces with thin root-black translucent borders, never
+  shadows.
+- **Do** use Cormorant in letter-spaced capitals for headings, brand and
+  navigation — it is the charte's facade.
+- **Do** use the waveform as the only animated waiting indicator.
 
 ### Don't:
-- **Don't** introduire une ombre, un dégradé, un arrondi ou une deuxième
-  couleur d'expression.
-- **Don't** mettre du texte long en IBM Plex Mono — le mono est réservé aux
-  valeurs courtes.
-- **Don't** réintroduire les pastilles de fond dans la navigation ou des
-  pilules de badge.
-- **Don't** animer autre chose que la forme d'onde, le scaleX des barres de
-  progression et les transitions de couleur de 0,2 s.
+- **Don't** introduce a shadow, a gradient, a rounded corner or a second
+  expression color.
+- **Don't** set long text in IBM Plex Mono — mono is reserved for short
+  values.
+- **Don't** bring back background pills in navigation or pill badges.
+- **Don't** animate anything but the waveform, the progress bars' scaleX
+  and the 0.2s color transitions.

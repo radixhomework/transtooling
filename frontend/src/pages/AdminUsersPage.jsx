@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import * as usersApi from "../api/users";
 import "./AdminUsersPage.css";
 
@@ -7,6 +8,7 @@ function emptyNewUser() {
 }
 
 export default function AdminUsersPage() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,7 +29,7 @@ export default function AdminUsersPage() {
       data.sort((a, b) => a.login.localeCompare(b.login));
       setUsers(data);
     } catch {
-      setError("Impossible de charger les utilisateurs.");
+      setError(t("adminUsers.errorLoad"));
     } finally {
       setIsLoading(false);
     }
@@ -35,6 +37,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleCreate(e) {
@@ -49,11 +52,11 @@ export default function AdminUsersPage() {
     } catch (err) {
       const status = err.response?.status;
       if (status === 400) {
-        setCreateError("Cet identifiant est déjà utilisé.");
+        setCreateError(t("adminUsers.errorLoginTaken"));
       } else if (status === 422) {
-        setCreateError("Le mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.");
+        setCreateError(t("adminUsers.errorPolicy"));
       } else {
-        setCreateError("Impossible de créer l'utilisateur.");
+        setCreateError(t("adminUsers.errorCreate"));
       }
     } finally {
       setIsCreating(false);
@@ -65,28 +68,30 @@ export default function AdminUsersPage() {
       await usersApi.updateUser(user.id, { is_active: !user.is_active });
       await fetchUsers();
     } catch {
-      setError("Impossible de mettre à jour cet utilisateur.");
+      setError(t("adminUsers.errorUpdate"));
     }
   }
 
   async function handleToggleRole(user) {
     const newRole = user.role === "admin" ? "user" : "admin";
-    if (!window.confirm(`Changer le rôle de ${user.login} en « ${newRole} » ?`)) return;
+    const roleLabel = newRole === "admin" ? t("common.roleAdmin") : t("common.roleUser");
+    if (!window.confirm(t("adminUsers.roleChangeConfirm", { login: user.login, role: roleLabel })))
+      return;
     try {
       await usersApi.updateUser(user.id, { role: newRole });
       await fetchUsers();
     } catch {
-      setError("Impossible de mettre à jour le rôle.");
+      setError(t("adminUsers.errorRole"));
     }
   }
 
   async function handleDelete(user) {
-    if (!window.confirm(`Supprimer définitivement le compte de ${user.login} ?`)) return;
+    if (!window.confirm(t("adminUsers.deleteConfirm", { login: user.login }))) return;
     try {
       await usersApi.deleteUser(user.id);
       await fetchUsers();
     } catch {
-      setError("Impossible de supprimer cet utilisateur (peut-être votre propre compte).");
+      setError(t("adminUsers.errorDelete"));
     }
   }
 
@@ -100,9 +105,7 @@ export default function AdminUsersPage() {
     } catch (err) {
       const status = err.response?.status;
       setResetError(
-        status === 422
-          ? "Le mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre."
-          : "Impossible de réinitialiser ce mot de passe."
+        status === 422 ? t("adminUsers.errorPolicy") : t("adminUsers.errorReset")
       );
     }
   }
@@ -111,18 +114,18 @@ export default function AdminUsersPage() {
     <div className="admin-users-page">
       <div className="admin-page-header">
         <div>
-          <h1>Utilisateurs</h1>
-          <p>Gérez les comptes utilisateurs et administrateurs de l'application.</p>
+          <h1>{t("adminUsers.title")}</h1>
+          <p>{t("adminUsers.subtitle")}</p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowCreateForm((v) => !v)}>
-          {showCreateForm ? "Annuler" : "Ajouter un utilisateur"}
+          {showCreateForm ? t("common.cancel") : t("adminUsers.add")}
         </button>
       </div>
 
       {showCreateForm && (
         <form onSubmit={handleCreate} className="card create-user-form">
           <div className="field">
-            <label htmlFor="new-login">Identifiant</label>
+            <label htmlFor="new-login">{t("adminUsers.login")}</label>
             <input
               id="new-login"
               type="text"
@@ -132,7 +135,7 @@ export default function AdminUsersPage() {
             />
           </div>
           <div className="field">
-            <label htmlFor="new-password">Mot de passe initial</label>
+            <label htmlFor="new-password">{t("adminUsers.initialPassword")}</label>
             <input
               id="new-password"
               type="password"
@@ -142,19 +145,19 @@ export default function AdminUsersPage() {
             />
           </div>
           <div className="field">
-            <label htmlFor="new-role">Rôle</label>
+            <label htmlFor="new-role">{t("adminUsers.role")}</label>
             <select
               id="new-role"
               value={newUser.role}
               onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
             >
-              <option value="user">Utilisateur</option>
-              <option value="admin">Administrateur</option>
+              <option value="user">{t("common.roleUser")}</option>
+              <option value="admin">{t("common.roleAdmin")}</option>
             </select>
           </div>
           {createError && <p className="error-text">{createError}</p>}
           <button type="submit" className="btn btn-primary" disabled={isCreating}>
-            {isCreating ? "Création..." : "Créer le compte"}
+            {isCreating ? t("adminUsers.creating") : t("adminUsers.create")}
           </button>
         </form>
       )}
@@ -162,16 +165,16 @@ export default function AdminUsersPage() {
       {error && <p className="error-text">{error}</p>}
 
       {isLoading ? (
-        <p>Chargement…</p>
+        <p>{t("common.loading")}</p>
       ) : (
         <div className="card">
           <table className="table">
             <thead>
               <tr>
-                <th>Identifiant</th>
-                <th>Rôle</th>
-                <th>Statut</th>
-                <th>Dernière connexion</th>
+                <th>{t("adminUsers.colLogin")}</th>
+                <th>{t("adminUsers.colRole")}</th>
+                <th>{t("adminUsers.colStatus")}</th>
+                <th>{t("adminUsers.colLastLogin")}</th>
                 <th></th>
               </tr>
             </thead>
@@ -181,22 +184,24 @@ export default function AdminUsersPage() {
                   <td>{user.login}</td>
                   <td>
                     <button className="role-toggle" onClick={() => handleToggleRole(user)}>
-                      {user.role === "admin" ? "Administrateur" : "Utilisateur"}
+                      {user.role === "admin" ? t("common.roleAdmin") : t("common.roleUser")}
                     </button>
                   </td>
                   <td>
                     <span className={`badge ${user.is_active ? "badge-done" : "badge-error"}`}>
-                      {user.is_active ? "Actif" : "Désactivé"}
+                      {user.is_active ? t("adminUsers.active") : t("adminUsers.disabled")}
                     </span>
                   </td>
                   <td className="mono">
                     {user.last_login_at
-                      ? new Date(user.last_login_at).toLocaleString("fr-FR")
-                      : "Jamais"}
+                      ? new Date(user.last_login_at).toLocaleString(
+                          navigator.language.startsWith("en") ? "en-GB" : "fr-FR"
+                        )
+                      : t("adminUsers.never")}
                   </td>
                   <td className="admin-user-actions">
                     <button className="btn btn-secondary btn-sm" onClick={() => handleToggleActive(user)}>
-                      {user.is_active ? "Désactiver" : "Activer"}
+                      {user.is_active ? t("adminUsers.disable") : t("adminUsers.enable")}
                     </button>
                     <button
                       className="btn btn-secondary btn-sm"
@@ -206,10 +211,10 @@ export default function AdminUsersPage() {
                         setResetError(null);
                       }}
                     >
-                      Réinitialiser mdp
+                      {t("adminUsers.resetPassword")}
                     </button>
                     <button className="btn btn-danger btn-sm" onClick={() => handleDelete(user)}>
-                      Supprimer
+                      {t("common.delete")}
                     </button>
                   </td>
                 </tr>
@@ -226,9 +231,9 @@ export default function AdminUsersPage() {
             onClick={(e) => e.stopPropagation()}
             onSubmit={handleResetPassword}
           >
-            <h2>Réinitialiser le mot de passe</h2>
+            <h2>{t("adminUsers.resetTitle")}</h2>
             <div className="field">
-              <label htmlFor="reset-password">Nouveau mot de passe</label>
+              <label htmlFor="reset-password">{t("adminUsers.newPassword")}</label>
               <input
                 id="reset-password"
                 type="password"
@@ -245,10 +250,10 @@ export default function AdminUsersPage() {
                 className="btn btn-secondary"
                 onClick={() => setResetTargetId(null)}
               >
-                Annuler
+                {t("common.cancel")}
               </button>
               <button type="submit" className="btn btn-primary">
-                Réinitialiser
+                {t("adminUsers.reset")}
               </button>
             </div>
           </form>

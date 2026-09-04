@@ -1,14 +1,21 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext.jsx";
+import { setLanguage } from "../i18n";
 import "./Layout.css";
 
 export default function Layout() {
+  const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   function handleLogout() {
     logout();
     navigate("/login");
+  }
+
+  function switchTo(lang) {
+    setLanguage(lang);
   }
 
   return (
@@ -22,32 +29,46 @@ export default function Layout() {
 
           <nav className="app-nav">
             <NavLink to="/" end className={({ isActive }) => (isActive ? "is-active" : "")}>
-              Transcription
+              {t("nav.transcription")}
             </NavLink>
             <NavLink to="/translation" className={({ isActive }) => (isActive ? "is-active" : "")}>
-              Traduction
+              {t("nav.translation")}
             </NavLink>
             {user?.role === "admin" && (
               <>
                 <NavLink to="/admin/users" className={({ isActive }) => (isActive ? "is-active" : "")}>
-                  Utilisateurs
+                  {t("nav.users")}
                 </NavLink>
                 <NavLink to="/admin/models" className={({ isActive }) => (isActive ? "is-active" : "")}>
-                  Modèles
+                  {t("nav.models")}
                 </NavLink>
                 <NavLink to="/admin/settings" className={({ isActive }) => (isActive ? "is-active" : "")}>
-                  Paramètres
+                  {t("nav.settings")}
                 </NavLink>
               </>
             )}
           </nav>
 
           <div className="app-account">
+            <div className="lang-switch" role="group" aria-label={t("nav.languageSwitch")}>
+              <button
+                className={i18n.language === "en" ? "is-active" : ""}
+                onClick={() => switchTo("en")}
+              >
+                EN
+              </button>
+              <button
+                className={i18n.language === "fr" ? "is-active" : ""}
+                onClick={() => switchTo("fr")}
+              >
+                FR
+              </button>
+            </div>
             <NavLink to="/account" className="app-account-email">
               {user?.login}
             </NavLink>
             <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
-              Déconnexion
+              {t("nav.logout")}
             </button>
           </div>
         </div>
