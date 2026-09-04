@@ -357,13 +357,6 @@ export default function AdminModelsPage() {
   const { t } = useTranslation();
   return (
     <div className="admin-models-page">
-      <div className="admin-page-header">
-        <div>
-          <h1>{t("adminModels.title")}</h1>
-          <p>{t("adminModels.subtitle")}</p>
-        </div>
-      </div>
-
       <WhisperModelsSection />
       <TranslationModelsSection />
     </div>

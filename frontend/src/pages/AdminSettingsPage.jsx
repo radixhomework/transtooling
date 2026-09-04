@@ -62,118 +62,121 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="admin-settings-page">
-      <div className="admin-page-header">
-        <div>
-          <h1>{t("adminSettings.title")}</h1>
-          <p>{t("adminSettings.subtitle")}</p>
-        </div>
-      </div>
-
       {isLoading ? (
         <p>{t("common.loading")}</p>
       ) : (
         <form onSubmit={handleSubmit} className="card settings-form">
-          <h2 className="settings-section-title">{t("adminSettings.audioSection")}</h2>
-          <div className="field">
-            <label htmlFor="max-size">{t("adminSettings.maxFileSize")}</label>
-            <input
-              id="max-size"
-              type="number"
-              min="1"
-              step="1"
-              required
-              value={maxFileSizeMb}
-              onChange={(e) => setMaxFileSizeMb(e.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="max-duration">{t("adminSettings.maxDuration")}</label>
-            <input
-              id="max-duration"
-              type="number"
-              min="0.1"
-              step="0.1"
-              required
-              value={maxDurationMin}
-              onChange={(e) => setMaxDurationMin(e.target.value)}
-            />
-          </div>
+          <div className="settings-columns">
+            <div className="settings-column">
+              <h2 className="settings-section-title">{t("adminSettings.columnTranscription")}</h2>
+              <h3 className="settings-subsection-title">{t("adminSettings.audioSection")}</h3>
+              <div className="field">
+                <label htmlFor="max-size">{t("adminSettings.maxFileSize")}</label>
+                <input
+                  id="max-size"
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
+                  value={maxFileSizeMb}
+                  onChange={(e) => setMaxFileSizeMb(e.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="max-duration">{t("adminSettings.maxDuration")}</label>
+                <input
+                  id="max-duration"
+                  type="number"
+                  min="0.1"
+                  step="0.1"
+                  required
+                  value={maxDurationMin}
+                  onChange={(e) => setMaxDurationMin(e.target.value)}
+                />
+              </div>
 
-          <h2 className="settings-section-title">{t("adminSettings.textSection")}</h2>
-          <div className="field">
-            <label htmlFor="max-text-chars">{t("adminSettings.maxTextLength")}</label>
-            <input
-              id="max-text-chars"
-              type="number"
-              min="1"
-              step="1"
-              required
-              value={maxTextLengthChars}
-              onChange={(e) => setMaxTextLengthChars(e.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="preview-chars">{t("adminSettings.previewChars")}</label>
-            <input
-              id="preview-chars"
-              type="number"
-              min="1"
-              step="1"
-              required
-              value={previewTruncateChars}
-              onChange={(e) => setPreviewTruncateChars(e.target.value)}
-            />
-          </div>
+            </div>
 
-          <h2 className="settings-section-title">{t("adminSettings.archiveSection")}</h2>
-          <div className="field">
-            <label htmlFor="max-archive-size">{t("adminSettings.maxArchiveSize")}</label>
-            <input
-              id="max-archive-size"
-              type="number"
-              min="1"
-              step="1"
-              required
-              value={maxArchiveSizeMb}
-              onChange={(e) => setMaxArchiveSizeMb(e.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="max-archive-files">{t("adminSettings.maxArchiveFiles")}</label>
-            <input
-              id="max-archive-files"
-              type="number"
-              min="1"
-              step="1"
-              required
-              value={maxArchiveFilesCount}
-              onChange={(e) => setMaxArchiveFilesCount(e.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="max-archive-uncompressed">
-              {t("adminSettings.maxArchiveUncompressed")}
-            </label>
-            <input
-              id="max-archive-uncompressed"
-              type="number"
-              min="1"
-              step="1"
-              required
-              value={maxArchiveUncompressedMb}
-              onChange={(e) => setMaxArchiveUncompressedMb(e.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="translatable-extensions">{t("adminSettings.extensions")}</label>
-            <input
-              id="translatable-extensions"
-              type="text"
-              required
-              value={translatableExtensions}
-              onChange={(e) => setTranslatableExtensions(e.target.value)}
-            />
-            <p className="settings-field-hint">{t("adminSettings.extensionsHint")}</p>
+            <div className="settings-column">
+              <h2 className="settings-section-title">{t("adminSettings.columnTranslation")}</h2>
+              <h3 className="settings-subsection-title">{t("adminSettings.textSection")}</h3>
+              <div className="field">
+                <label htmlFor="max-text-chars">{t("adminSettings.maxTextLength")}</label>
+                <input
+                  id="max-text-chars"
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
+                  value={maxTextLengthChars}
+                  onChange={(e) => setMaxTextLengthChars(e.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="preview-chars">{t("adminSettings.previewChars")}</label>
+                <input
+                  id="preview-chars"
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
+                  value={previewTruncateChars}
+                  onChange={(e) => setPreviewTruncateChars(e.target.value)}
+                />
+              </div>
+
+              <h3 className="settings-subsection-title">{t("adminSettings.archiveSection")}</h3>
+              <div className="field">
+                <label htmlFor="max-archive-size">{t("adminSettings.maxArchiveSize")}</label>
+                <input
+                  id="max-archive-size"
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
+                  value={maxArchiveSizeMb}
+                  onChange={(e) => setMaxArchiveSizeMb(e.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="max-archive-files">{t("adminSettings.maxArchiveFiles")}</label>
+                <input
+                  id="max-archive-files"
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
+                  value={maxArchiveFilesCount}
+                  onChange={(e) => setMaxArchiveFilesCount(e.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="max-archive-uncompressed">
+                  {t("adminSettings.maxArchiveUncompressed")}
+                </label>
+                <input
+                  id="max-archive-uncompressed"
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
+                  value={maxArchiveUncompressedMb}
+                  onChange={(e) => setMaxArchiveUncompressedMb(e.target.value)}
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="translatable-extensions">{t("adminSettings.extensions")}</label>
+                <input
+                  id="translatable-extensions"
+                  type="text"
+                  required
+                  value={translatableExtensions}
+                  onChange={(e) => setTranslatableExtensions(e.target.value)}
+                />
+                <p className="settings-field-hint">{t("adminSettings.extensionsHint")}</p>
+              </div>
+            </div>
           </div>
 
           {error && <p className="error-text">{error}</p>}

@@ -19,7 +19,8 @@
     "models": "Models",
     "settings": "Settings",
     "logout": "Sign out",
-    "languageSwitch": "Language"
+    "languageSwitch": "Language",
+    "admin": "Administration"
   },
   "login": {
     "login": "Login",
@@ -182,6 +183,12 @@
     "extensionsHint": "Files with these extensions are translated (JSON: string values, keys preserved; HTML: text and attributes; Markdown: syntax and paths preserved). Other files are copied as-is.",
     "success": "Settings saved.",
     "errorLoad": "Could not load the settings.",
-    "errorSave": "Could not save the settings. Check that the values are positive and that at least one translatable extension is defined."
+    "errorSave": "Could not save the settings. Check that the values are positive and that at least one translatable extension is defined.",
+    "columnTranscription": "Transcription",
+    "columnTranslation": "Translation"
+  },
+  "admin": {
+    "title": "Administration",
+    "subtitle": "Manage the application's users, models and settings."
   }
 }

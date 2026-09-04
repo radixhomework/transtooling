@@ -28,9 +28,7 @@ src/
 | `/` | authenticated | Upload + own transcription history, status polling |
 | `/translation` | authenticated | Translation (manual text / ZIP archive), history, polling |
 | `/account` | authenticated | Password change |
-| `/admin/users` | admin | User management |
-| `/admin/models` | admin | Model management (Whisper + translation, on-demand download) |
-| `/admin/settings` | admin | Size/duration limits + translation settings |
+| `/admin` | admin | Administration: tabs for Users, Models (Whisper + translation, on-demand download) and Settings (size/duration limits + translation settings) |
 
 ## Local development
 
