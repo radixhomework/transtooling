@@ -4,6 +4,7 @@
 # Python
 __pycache__/
 *.pyc
+.pytest_cache/
 .venv/
 
 # Node / frontend
@@ -14,7 +15,7 @@ dist/
 data/
 audio_tmp/
 transcripts/
-models/
+/models/
 
 # OS / éditeurs
 .DS_Store
