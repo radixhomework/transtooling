@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# ffmpeg requis par faster-whisper pour décoder les fichiers audio
+# ffmpeg required by faster-whisper to decode audio files
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
@@ -11,14 +11,13 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
-# Les tests (dossier tests/, pytest.ini, requirements-dev.txt) restent hors
-# de l'image de production ; ils sont exécutés en dehors du build (voir
-# README worker).
+# Tests (tests/ folder, pytest.ini, requirements-dev.txt) stay out of the
+# production image; they are run outside the build (see worker README).
 
-# Volumes attendus au runtime (montés via docker-compose) :
-#   /data          -> base SQLite (partagée avec le backend)
-#   /audio_tmp     -> fichiers audio à transcrire (supprimés après traitement)
-#   /transcripts   -> fichiers .vtt générés
-#   /models        -> modèles faster-whisper téléchargés à la demande
+# Volumes expected at runtime (mounted via docker-compose):
+#   /data          -> SQLite database (shared with the backend)
+#   /audio_tmp     -> audio files to transcribe (deleted after processing)
+#   /transcripts   -> generated .vtt files
+#   /models        -> faster-whisper models downloaded on demand
 
 CMD ["python", "-m", "app.main"]

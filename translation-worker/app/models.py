@@ -1,10 +1,10 @@
 """
-Modèles SQLModel du worker de traduction.
+SQLModel models for the translation worker.
 
-NOTE IMPORTANTE : backend et workers sont des images Docker distinctes et ne
-partagent pas de code Python directement. Ces définitions doivent donc rester
-identiques à celles de backend/app/models/*.py (même table, mêmes colonnes)
-puisqu'elles pointent vers la même base SQLite via un volume partagé.
+IMPORTANT NOTE: backend and workers are distinct Docker images and do
+not share Python code directly. These definitions must therefore stay
+identical to backend/app/models/*.py (same table, same columns) since
+they target the same SQLite database through a shared volume.
 """
 
 from datetime import datetime
@@ -85,9 +85,9 @@ class TranslationCache(SQLModel, table=True):
 
 
 class AppSettings(SQLModel, table=True):
-    """Miroir en lecture seule de la ligne singleton des paramètres admin
-    (seuls les champs utiles au worker sont lus ; les colonnes doivent
-    correspondre à backend/app/models/app_settings.py)."""
+    """Read-only mirror of the admin settings singleton row (only the
+    fields the worker reads are listed; columns must match
+    backend/app/models/app_settings.py)."""
 
     __tablename__ = "appsettings"
 

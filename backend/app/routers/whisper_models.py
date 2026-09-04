@@ -15,12 +15,12 @@ from app.schemas import (
 
 router = APIRouter(prefix="/api/admin/whisper-models", tags=["admin-whisper-models"])
 
-# Endpoint public (tout utilisateur authentifié) : modèles utilisables pour
-# une transcription, proposés dans le sélecteur du tableau de bord.
+# Public endpoint (any authenticated user): models usable for a
+# transcription, offered in the dashboard selector.
 public_router = APIRouter(prefix="/api/models", tags=["models"])
 
-# Modèles faster-whisper supportés (référence statique ; l'état réel de
-# téléchargement est suivi en base via WhisperModel).
+# Supported faster-whisper models (static reference; the actual download
+# state is tracked in the database via WhisperModel).
 AVAILABLE_MODEL_NAMES = ["tiny", "base", "small", "medium", "large-v3"]
 
 
@@ -31,7 +31,7 @@ def list_models(
 ):
     existing = {m.name: m for m in session.exec(select(WhisperModel)).all()}
 
-    # S'assure que chaque modèle connu a une entrée en base (créée au besoin).
+    # Ensures every known model has a database row (created if needed).
     for name in AVAILABLE_MODEL_NAMES:
         if name not in existing:
             model = WhisperModel(name=name, status=ModelStatus.not_downloaded)
@@ -58,8 +58,8 @@ def request_model_download(
     if model.status == ModelStatus.downloaded:
         raise HTTPException(status_code=400, detail="Modèle déjà téléchargé")
 
-    # Le passage à "downloading" sera pris en charge par le worker, qui poll
-    # les modèles en attente de téléchargement (voir Phase 3 - worker).
+    # The transition to "downloading" is handled by the worker, which polls
+    # models awaiting download.
     model.status = ModelStatus.downloading
     model.download_progress = 0
     model.error_message = None
@@ -84,7 +84,7 @@ def request_model_deletion(
             detail="Impossible de supprimer le modèle par défaut. Changez d'abord le modèle par défaut.",
         )
 
-    # La suppression physique du fichier modèle est effectuée par le worker.
+    # The physical deletion of the model file is performed by the worker.
     model.status = ModelStatus.not_downloaded
     model.is_enabled = False
     model.download_progress = None
@@ -127,7 +127,7 @@ def update_model(
                 status_code=400,
                 detail="Le modèle par défaut doit être téléchargé et activé",
             )
-        # Un seul modèle par défaut à la fois.
+        # Only one default model at a time.
         for other in session.exec(select(WhisperModel)).all():
             if other.id != model.id and other.is_default:
                 other.is_default = False
@@ -146,7 +146,7 @@ def list_enabled_models(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
-    """Modèles proposés aux utilisateurs : téléchargés ET activés par l'admin."""
+    """Models offered to users: downloaded AND enabled by the admin."""
     return session.exec(
         select(WhisperModel).where(
             WhisperModel.is_enabled == True,  # noqa: E712

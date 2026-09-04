@@ -2,8 +2,8 @@ from sqlmodel import SQLModel, Session, create_engine
 
 from app.core.config import settings
 
-# check_same_thread=False : nécessaire pour SQLite utilisé depuis plusieurs
-# threads (FastAPI + worker accédant au même fichier via volume partagé).
+# check_same_thread=False: required for SQLite used from several threads
+# (FastAPI + workers accessing the same file through a shared volume).
 engine = create_engine(
     f"sqlite:///{settings.sqlite_path}",
     connect_args={"check_same_thread": False},
@@ -11,9 +11,9 @@ engine = create_engine(
 
 
 def init_db() -> None:
-    """Crée les tables si elles n'existent pas encore."""
-    # Les modèles doivent être importés avant create_all pour être enregistrés
-    # dans SQLModel.metadata.
+    """Creates the tables if they do not exist yet."""
+    # Models must be imported before create_all so they get registered in
+    # SQLModel.metadata.
     from app.models import user, job, whisper_model, app_settings, translation  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
@@ -23,9 +23,9 @@ def init_db() -> None:
 
 
 def _upgrade_settings_defaults() -> None:
-    """Fait passer les extensions traduisibles par défaut à une valeur plus
-    récente (ex. ajout de « md ») pour les lignes jamais personnalisées :
-    une valeur modifiée par l'admin est toujours préservée."""
+    """Upgrades the default translatable extensions to a newer value
+    (e.g. adding "md") for rows never customized: any admin-modified value
+    is always preserved."""
     from sqlalchemy import text
 
     upgrades = (
@@ -42,13 +42,13 @@ def _upgrade_settings_defaults() -> None:
             )
 
 
-# Colonnes ajoutées après la création initiale du schéma. SQLModel ne fait
-# jamais d'ALTER TABLE : create_all ignore une table existante, y compris ses
-# nouvelles colonnes. Ces ALTER sont donc joués manuellement, de façon
-# idempotente, pour les bases déjà déployées. À maintenir en cohérence avec
-# worker/app/main.py et translation-worker/app/main.py (base partagée).
-# Les colonnes NOT NULL portent un DEFAULT pour que l'ALTER fonctionne sur
-# une table contenant déjà des lignes (SQLite).
+# Columns added after the initial schema creation. SQLModel never runs
+# ALTER TABLE: create_all ignores an existing table, including its new
+# columns. These ALTERs are therefore applied manually, idempotently, for
+# already-deployed databases. Keep in sync with worker/app/main.py and
+# translation-worker/app/main.py (shared database).
+# NOT NULL columns carry a DEFAULT so the ALTER works on a table that
+# already contains rows (SQLite).
 _SCHEMA_PATCHES = {
     "transcriptionjob": {
         "audio_duration_seconds": "REAL",
@@ -71,7 +71,7 @@ _SCHEMA_PATCHES = {
     },
 }
 
-# Colonnes renommées après coup (SQLite >= 3.25 : ALTER TABLE RENAME COLUMN).
+# Columns renamed after the fact (SQLite >= 3.25: ALTER TABLE RENAME COLUMN).
 _SCHEMA_RENAMES = {
     "user": {"email": "login"},
 }

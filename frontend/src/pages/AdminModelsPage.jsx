@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import * as modelsApi from "../api/whisperModels";
 import * as translationApi from "../api/translation";
 import Waveform from "../components/Waveform.jsx";
@@ -6,15 +7,8 @@ import "./AdminModelsPage.css";
 
 const POLL_INTERVAL_MS = 4000;
 
-const STATUS_LABELS = {
-  not_downloaded: "Non téléchargé",
-  downloading: "Téléchargement…",
-  downloaded: "Téléchargé",
-  error: "Erreur",
-};
-
-// Tailles approximatives, à titre indicatif avant téléchargement ; la taille
-// réelle sur disque est remontée par le backend une fois le modèle téléchargé.
+// Approximate sizes, indicative before download; the actual on-disk
+// size is reported by the backend once the model is downloaded.
 const WHISPER_APPROX_SIZE_MB = {
   tiny: 75,
   base: 145,
@@ -23,31 +17,32 @@ const WHISPER_APPROX_SIZE_MB = {
   "large-v3": 3000,
 };
 
-const DIRECTION_LABELS = {
-  "fr-en": "Français → Anglais",
-  "en-fr": "Anglais → Français",
-};
-
 const DIRECTION_APPROX_SIZE_MB = { "fr-en": 650, "en-fr": 650 };
 
-function formatSizeMB(sizeMB) {
-  if (sizeMB == null) return null;
-  if (sizeMB >= 1024) {
-    return `${(sizeMB / 1024).toFixed(1).replace(".", ",")} Go`;
-  }
-  return `${sizeMB} Mo`;
-}
+const STATUS_KEYS = {
+  not_downloaded: "statusNotDownloaded",
+  downloading: "statusDownloading",
+  downloaded: "statusDownloaded",
+  error: "statusError",
+};
+
+const DIRECTION_KEYS = {
+  "fr-en": "directionFrEn",
+  "en-fr": "directionEnFr",
+};
 
 function ModelStatusLine({ model }) {
+  const { t } = useTranslation();
   return (
     <div className={`model-status status-${model.status}`}>
       {model.status === "downloading" && <Waveform size="sm" />}
-      {STATUS_LABELS[model.status]}
+      {t(`adminModels.${STATUS_KEYS[model.status] || model.status}`)}
     </div>
   );
 }
 
 function useModels(fetcher) {
+  const { t } = useTranslation();
   const [models, setModels] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -58,10 +53,11 @@ function useModels(fetcher) {
       const data = await fetcher();
       setModels(data);
     } catch {
-      setError("Impossible de charger la liste des modèles.");
+      setError(t("adminModels.errorLoad"));
     } finally {
       setIsLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher]);
 
   useEffect(() => {
@@ -84,11 +80,12 @@ function useModels(fetcher) {
         await action();
         await fetchModels();
       } catch (err) {
-        setError(err.response?.data?.detail || "Une erreur est survenue.");
+        setError(err.response?.data?.detail || t("common.errorGeneric"));
       } finally {
         setBusyKey(null);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [fetchModels]
   );
 
@@ -96,22 +93,31 @@ function useModels(fetcher) {
 }
 
 function WhisperModelsSection() {
+  const { t, i18n } = useTranslation();
   const { models, isLoading, error, busyKey, withBusy } = useModels(modelsApi.listWhisperModels);
+
+  function formatSizeMB(sizeMB) {
+    if (sizeMB == null) return null;
+    if (sizeMB >= 1024) {
+      const go = (sizeMB / 1024).toFixed(1);
+      return i18n.language === "en"
+        ? `${go} GB`
+        : `${go.replace(".", ",")} Go`;
+    }
+    return `${sizeMB} MB`;
+  }
 
   return (
     <section className="models-section">
       <div className="models-section-header">
-        <h2>Whisper — transcription audio</h2>
-        <p>
-          Modèles faster-whisper utilisés pour la transcription (français uniquement),
-          téléchargés à la demande.
-        </p>
+        <h2>{t("adminModels.whisperSection")}</h2>
+        <p>{t("adminModels.whisperSectionDesc")}</p>
       </div>
 
       {error && <p className="error-text">{error}</p>}
 
       {isLoading ? (
-        <p>Chargement…</p>
+        <p>{t("common.loading")}</p>
       ) : (
         <div className="models-grid">
           {models.map((model) => {
@@ -121,7 +127,9 @@ function WhisperModelsSection() {
               <div key={model.name} className={`card model-card ${model.is_default ? "is-default" : ""}`}>
                 <div className="model-card-header">
                   <span className="model-name mono">{model.name}</span>
-                  {model.is_default && <span className="badge badge-done">Par défaut</span>}
+                  {model.is_default && (
+                    <span className="badge badge-done">{t("adminModels.badgeDefault")}</span>
+                  )}
                 </div>
 
                 <ModelStatusLine model={model} />
@@ -143,7 +151,7 @@ function WhisperModelsSection() {
                         withBusy(model.name, () => modelsApi.downloadWhisperModel(model.name))
                       }
                     >
-                      Télécharger
+                      {t("adminModels.download")}
                     </button>
                   )}
 
@@ -159,7 +167,7 @@ function WhisperModelsSection() {
                             )
                           }
                         >
-                          Activer
+                          {t("adminModels.enable")}
                         </button>
                       )}
 
@@ -174,7 +182,7 @@ function WhisperModelsSection() {
                               )
                             }
                           >
-                            Définir par défaut
+                            {t("adminModels.set_default")}
                           </button>
                           <button
                             className="btn btn-secondary btn-sm"
@@ -185,7 +193,7 @@ function WhisperModelsSection() {
                               )
                             }
                           >
-                            Désactiver
+                            {t("adminModels.disable")}
                           </button>
                         </>
                       )}
@@ -194,9 +202,9 @@ function WhisperModelsSection() {
                         <button
                           className="btn btn-secondary btn-sm"
                           disabled
-                          title="Changez d'abord le modèle par défaut pour désactiver ce modèle"
+                          title={t("adminModels.disableDefaultHint")}
                         >
-                          Désactiver
+                          {t("adminModels.disable")}
                         </button>
                       )}
 
@@ -208,7 +216,7 @@ function WhisperModelsSection() {
                             withBusy(model.name, () => modelsApi.deleteWhisperModel(model.name))
                           }
                         >
-                          Supprimer
+                          {t("common.delete")}
                         </button>
                       )}
                     </>
@@ -224,22 +232,32 @@ function WhisperModelsSection() {
 }
 
 function TranslationModelsSection() {
+  const { t, i18n } = useTranslation();
   const fetcher = useCallback(() => translationApi.listTranslationModels(), []);
   const { models, isLoading, error, busyKey, withBusy } = useModels(fetcher);
+
+  function formatSizeMB(sizeMB) {
+    if (sizeMB == null) return null;
+    if (sizeMB >= 1024) {
+      const go = (sizeMB / 1024).toFixed(1);
+      return i18n.language === "en"
+        ? `${go} GB`
+        : `${go.replace(".", ",")} Go`;
+    }
+    return `${sizeMB} MB`;
+  }
 
   return (
     <section className="models-section">
       <div className="models-section-header">
-        <h2>Traduction</h2>
-        <p>
-          Modèles utilisés pour la traduction, un par direction, téléchargés à la demande.
-        </p>
+        <h2>{t("adminModels.translationSection")}</h2>
+        <p>{t("adminModels.translationSectionDesc")}</p>
       </div>
 
       {error && <p className="error-text">{error}</p>}
 
       {isLoading ? (
-        <p>Chargement…</p>
+        <p>{t("common.loading")}</p>
       ) : (
         <div className="models-grid">
           {models.map((model) => {
@@ -251,7 +269,7 @@ function TranslationModelsSection() {
               <div key={model.direction} className="card model-card">
                 <div className="model-card-header">
                   <span className="model-name mono">
-                    {DIRECTION_LABELS[model.direction] || model.direction}
+                    {t(`adminModels.${DIRECTION_KEYS[model.direction] || model.direction}`)}
                   </span>
                 </div>
 
@@ -276,7 +294,7 @@ function TranslationModelsSection() {
                         )
                       }
                     >
-                      Télécharger
+                      {t("adminModels.download")}
                     </button>
                   )}
 
@@ -294,7 +312,7 @@ function TranslationModelsSection() {
                             )
                           }
                         >
-                          Activer
+                          {t("adminModels.enable")}
                         </button>
                       )}
                       {model.is_enabled && (
@@ -309,7 +327,7 @@ function TranslationModelsSection() {
                             )
                           }
                         >
-                          Désactiver
+                          {t("adminModels.disable")}
                         </button>
                       )}
                       <button
@@ -321,7 +339,7 @@ function TranslationModelsSection() {
                           )
                         }
                       >
-                        Supprimer
+                        {t("common.delete")}
                       </button>
                     </>
                   )}
@@ -336,15 +354,13 @@ function TranslationModelsSection() {
 }
 
 export default function AdminModelsPage() {
+  const { t } = useTranslation();
   return (
     <div className="admin-models-page">
       <div className="admin-page-header">
         <div>
-          <h1>Modèles</h1>
-          <p>
-            Téléchargez, activez et supprimez les modèles utilisés par l'application :
-            Whisper pour la transcription audio, les modèles de traduction pour la traduction.
-          </p>
+          <h1>{t("adminModels.title")}</h1>
+          <p>{t("adminModels.subtitle")}</p>
         </div>
       </div>
 

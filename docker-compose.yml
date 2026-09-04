@@ -55,7 +55,7 @@ services:
         condition: service_healthy
     networks:
       - internal_net
-    # Un seul job traité à la fois : pas de scale > 1 sur ce service.
+    # One job processed at a time: do not scale this service beyond 1.
 
   translation-worker:
     build:
@@ -79,8 +79,8 @@ services:
         condition: service_healthy
     networks:
       - internal_net
-    # Worker séquentiel indépendant du worker de transcription : pas de
-    # scale > 1 sur ce service.
+    # Sequential worker, independent from the transcription worker: do not
+    # scale this service beyond 1.
 
   frontend:
     build:
@@ -92,11 +92,11 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    # Exposé uniquement sur localhost (127.0.0.1) : seul le reverse proxy
-    # Apache, exécuté sur la même machine, doit pouvoir y accéder. Le port
-    # hôte est configurable via FRONTEND_HOST_PORT dans .env (défaut 8080),
-    # et doit correspondre à la valeur utilisée dans
-    # reverse-proxy/apache-transcription.conf (directive ProxyPass).
+    # Only exposed on localhost (127.0.0.1): the Apache reverse proxy, running
+    # on the same machine, is the only service that should access it. The host
+    # port is configurable via FRONTEND_HOST_PORT in .env (default 8080) and
+    # must match the value used in reverse-proxy/apache-transcription.conf
+    # (ProxyPass directive).
     ports:
       - "127.0.0.1:${FRONTEND_HOST_PORT:-8080}:80"
     networks:

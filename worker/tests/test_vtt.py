@@ -5,7 +5,7 @@ from app.vtt import segments_to_vtt
 
 @dataclass
 class FakeSegment:
-    """Simule un segment retourné par faster-whisper (start, end, text)."""
+    """Simulates a segment returned by faster-whisper (start, end, text)."""
     start: float
     end: float
     text: str

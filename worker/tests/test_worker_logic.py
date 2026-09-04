@@ -19,7 +19,7 @@ class FakeInfo:
 
 
 class FakeWhisperModel:
-    """Simule faster_whisper.WhisperModel.transcribe sans charger de vrai modèle."""
+    """Simulates faster_whisper.WhisperModel.transcribe without loading a real model."""
 
     def transcribe(self, audio_path, language="fr"):
         segments = [
@@ -52,7 +52,7 @@ def test_process_pending_job_success(db_session, make_audio_file, monkeypatch):
     assert job.result_vtt_path is not None
     assert job.audio_tmp_filename is None
     assert job.progress == 100
-    assert not __import__("os").path.exists(audio_path)  # audio supprimé après traitement
+    assert not __import__("os").path.exists(audio_path)  # audio deleted after processing
 
     with open(job.result_vtt_path, encoding="utf-8") as f:
         content = f.read()
@@ -229,7 +229,7 @@ def test_process_pending_job_commits_progress_incrementally(db_session, make_aud
     db_session.add(job)
     db_session.commit()
 
-    # Désactive le throttle pour observer un commit par segment.
+    # Disable throttling to observe one commit per segment.
     monkeypatch.setattr(worker_main, "PROGRESS_MIN_DELTA_PERCENT", 0)
     monkeypatch.setattr(worker_main, "PROGRESS_MIN_INTERVAL_SECONDS", 0.0)
 
@@ -240,8 +240,8 @@ def test_process_pending_job_commits_progress_incrementally(db_session, make_aud
             def gen():
                 for second in range(10, 101, 10):
                     yield FakeSegment(start=second - 10, end=float(second), text=f"Seg {second}.")
-                    # Après le yield, le worker a commité la progression de
-                    # ce segment : la relire depuis une session neuve.
+                    # After the yield, the worker has committed this
+                    # segment's progress: re-read it from a fresh session.
                     with Session(worker_main.engine) as s:
                         seen_progress.append(s.get(TranscriptionJob, 30).progress)
 
@@ -255,8 +255,8 @@ def test_process_pending_job_commits_progress_incrementally(db_session, make_aud
     db_session.refresh(job)
     assert job.status == JobStatus.done
     assert job.progress == 100
-    # Progression commitée en base au fil des segments, plafonnée à 99
-    # pendant le traitement (le 100 final n'est posé qu'au passage à done).
+    # Progress committed to the database as segments flow, capped at 99
+    # during processing (the final 100 is only set when moving to done).
     assert seen_progress == [10, 20, 30, 40, 50, 60, 70, 80, 90, 99]
 
 
@@ -286,7 +286,7 @@ def test_process_pending_job_without_duration_skips_progress(db_session, make_au
     assert job.progress == 100
 
 
-# --- Progression du téléchargement des modèles ---
+# --- Model download progress ---
 
 
 def test_download_progress_state_records_percent_in_db(db_session):
@@ -305,7 +305,7 @@ def test_download_progress_state_records_percent_in_db(db_session):
     with Session(worker_main.engine) as s:
         assert s.get(WhisperModel, 3).download_progress == 37
 
-    # Fermeture de bar_a : son cumul est conservé (ids recyclables).
+    # Closing bar_a: its totals are kept (ids are recyclable).
     state.finalize(id(bar_a), 50, 100)
     state.record(id(bar_b), 100, 100)  # (50+100)/200 = 75 %
     with Session(worker_main.engine) as s:
@@ -319,7 +319,7 @@ def test_download_progress_state_throttles_writes(db_session):
 
     state = worker_main._DownloadProgressState(model.id, min_interval_seconds=3600.0)
     state.record(id("bar"), 40, 100)  # premier write : passe
-    state.record(id("bar"), 45, 100)  # trop tôt : supprimé par le throttle
+    state.record(id("bar"), 45, 100)  # too early: dropped by throttling
     with Session(worker_main.engine) as s:
         assert s.get(WhisperModel, 4).download_progress == 40
 
@@ -335,8 +335,8 @@ def test_process_pending_model_downloads_success(db_session, monkeypatch):
 
     def fake_snapshot_download(**kwargs):
         snapshot_calls.append(kwargs)
-        # Simule le cache huggingface écrit sur disque : blobs (2 Mo) +
-        # snapshots (symlinks vers les blobs, à ne pas recompter).
+        # Simulates the huggingface cache written to disk: blobs (2 MB) +
+        # snapshots (symlinks to the blobs, not to be double counted).
         cache_dir = os.path.join(
             os.environ["WHISPER_MODELS_PATH"], "models--Systran--faster-whisper-tiny"
         )
@@ -384,13 +384,13 @@ def test_process_pending_model_downloads_error(db_session, monkeypatch):
     assert "Réseau indisponible" in model.error_message
 
 
-# --- Migration légère du schéma SQLite ---
+# --- Lightweight SQLite schema migration ---
 
 
 def test_backfill_model_disk_sizes_fills_missing(db_session):
     import os
 
-    # Modèle "téléchargé" avant l'ajout de la colonne disk_size_mb.
+    # Model "downloaded" before the disk_size_mb column was added.
     model = WhisperModel(id=7, name="small", status=ModelStatus.downloaded, disk_size_mb=None)
     db_session.add(model)
     db_session.commit()
@@ -441,7 +441,7 @@ def test_ensure_schema_upgrades_adds_missing_columns(db_session):
     assert {"audio_duration_seconds", "progress"} <= columns
 
 
-# --- Annulation ---
+# --- Cancellation ---
 
 
 def test_job_cancelled_before_processing(db_session, make_audio_file, monkeypatch):
@@ -465,7 +465,7 @@ def test_job_cancelled_before_processing(db_session, make_audio_file, monkeypatc
     db_session.refresh(job)
     assert job.status == JobStatus.cancelled
     assert job.error_message is None
-    assert not __import__("os").path.exists(audio_path)  # audio nettoyé
+    assert not __import__("os").path.exists(audio_path)  # audio cleaned up
 
 
 def test_job_cancelled_during_transcription(db_session, make_audio_file, monkeypatch):
@@ -487,7 +487,7 @@ def test_job_cancelled_during_transcription(db_session, make_audio_file, monkeyp
         def transcribe(self, audio_path, language="fr"):
             def gen():
                 yield FakeSegment(start=0.0, end=1.0, text="Premier.")
-                # Annulation demandée pendant le décodage.
+                # Cancellation requested during decoding.
                 with Session(worker_main.engine) as s:
                     row = s.get(TranscriptionJob, 41)
                     row.cancel_requested = True
@@ -500,7 +500,7 @@ def test_job_cancelled_during_transcription(db_session, make_audio_file, monkeyp
             return gen(), info
 
     monkeypatch.setattr(worker_main, "_get_whisper_model", lambda name: SlowlyCancellingModel())
-    # Force la consultation du fanion à chaque segment.
+    # Forces the cancel-flag check on every segment.
     monkeypatch.setattr(worker_main, "CANCEL_CHECK_INTERVAL_SECONDS", -1.0)
 
     worker_main.process_pending_job(db_session)

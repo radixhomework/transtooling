@@ -35,7 +35,7 @@ def test_login_lockout_after_repeated_failures(client):
         )
         assert response.status_code == 401
 
-    # 6e tentative : doit être bloquée par la protection brute-force
+    # 6th attempt: must be blocked by the brute-force protection
     response = client.post(
         "/api/auth/login",
         json={"login": login_name, "password": "wrong-password"},

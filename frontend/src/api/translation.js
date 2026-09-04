@@ -40,7 +40,7 @@ export function cancelTranslationJob(jobId) {
   return apiClient.post(`/translation/jobs/${jobId}/cancel`);
 }
 
-// --- Partie admin (modèles de traduction) ---
+// --- Admin part (translation models) ---
 
 export function listTranslationModels() {
   return apiClient.get("/admin/translation-models").then((r) => r.data);

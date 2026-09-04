@@ -20,7 +20,7 @@ from app.models import TranscriptionJob, WhisperModel  # noqa: E402
 
 @pytest.fixture(autouse=True)
 def _fresh_database():
-    """Recrée les tables avant chaque test pour repartir d'un état propre."""
+    """Recreates the tables before each test for a clean state."""
     SQLModel.metadata.drop_all(worker_main.engine)
     SQLModel.metadata.create_all(worker_main.engine)
     yield
@@ -34,7 +34,7 @@ def db_session():
 
 @pytest.fixture()
 def make_audio_file():
-    """Crée un fichier audio factice (contenu arbitraire) dans AUDIO_TMP_PATH."""
+    """Creates a fake audio file (arbitrary content) in AUDIO_TMP_PATH."""
     def _make(filename: str, content: bytes = b"fake audio content") -> str:
         path = os.path.join(os.environ["AUDIO_TMP_PATH"], filename)
         with open(path, "wb") as f:

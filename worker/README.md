@@ -1,56 +1,59 @@
-# Worker — Traitement de transcription
+# Worker — Transcription processing
 
-## Rôle
+## Role
 
-Boucle de traitement séquentielle (un seul job à la fois) qui :
-- consomme les jobs `pending` créés par le backend
-- télécharge/supprime les modèles faster-whisper à la demande de l'admin
-- transcrit l'audio en français avec le modèle configuré sur le job
-- génère un fichier `.vtt` (texte nettoyé + horodatage)
-- supprime systématiquement l'audio source après traitement (succès ou échec)
-- reprend automatiquement les jobs restés bloqués en `processing` après un
-  crash ou redémarrage du conteneur
+Sequential processing loop (one job at a time) that:
+- consumes `pending` jobs created by the backend
+- downloads/deletes faster-whisper models on admin request
+- transcribes the audio in French with the model configured on the job
+- generates a `.vtt` file (cleaned text + timestamps)
+- always deletes the source audio after processing (success or failure)
+- automatically recovers jobs left stuck in `processing` after a crash or
+  container restart
+- supports cancellation requested by the user during processing
 
-## Développement local (hors Docker)
+## Local development (outside Docker)
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt          # inclut faster-whisper (lourd)
-pip install -r requirements-dev.txt      # pytest pour les tests
+pip install -r requirements.txt          # includes faster-whisper (heavy)
+pip install -r requirements-dev.txt      # pytest for the tests
 ```
 
-## Lancer les tests
+## Running the tests
 
 ```bash
 pytest -v
 ```
 
-**Important** : les tests unitaires (`tests/test_text_postprocess.py`,
-`tests/test_vtt.py`, `tests/test_worker_logic.py`) **ne nécessitent pas**
-`faster-whisper` installé — le chargement réel d'un modèle Whisper est
-simulé (`monkeypatch`) dans `test_worker_logic.py`. Pour lancer uniquement
-ces tests sans attendre l'installation de `faster-whisper` :
+**Important**: the unit tests (`tests/test_text_postprocess.py`,
+`tests/test_vtt.py`, `tests/test_worker_logic.py`) **do not require**
+`faster-whisper` to be installed — actual Whisper model loading is
+simulated (`monkeypatch`) in `test_worker_logic.py`. To run only these
+tests without waiting for `faster-whisper` to install:
 
 ```bash
 pip install sqlmodel pydantic-settings pytest
 pytest -v
 ```
 
-Couverture actuelle (Phase 3) :
-- post-traitement du texte (nettoyage espaces/ponctuation, majuscules) — 12 tests
-- génération WebVTT (format, horodatage, segments vides) — 5 tests
-- logique de traitement des jobs : succès, audio manquant, erreur de
-  transcription, ordre FIFO — 5 tests
-- reprise après crash des jobs bloqués en `processing` — 3 tests
+Current coverage (Phase 3 + progress/cancellation):
+- text post-processing (space/punctuation cleanup, capitals) — 12 tests
+- WebVTT generation (format, timestamps, empty segments) — 5 tests
+- job processing logic: success, missing audio, transcription error, FIFO
+  order — 5 tests
+- crash recovery of jobs stuck in `processing` — 3 tests
+- progress tracking and cancellation — 5 tests
+- SQLite schema patch helper — 1 test
 
-Non couvert par des tests automatisés (nécessiterait un vrai modèle
-faster-whisper téléchargé, trop lourd pour une suite de tests unitaires) :
-- `_get_whisper_model` (chargement réel d'un modèle)
+Not covered by automated tests (would require a real downloaded
+faster-whisper model, too heavy for a unit test suite):
+- `_get_whisper_model` (actual model loading)
 - `process_pending_model_downloads` / `process_pending_model_deletions`
-  (accès réseau HuggingFace / suppression disque réelle)
+  (HuggingFace network access / real disk deletion)
 
-## Lancer le worker en local
+## Running the worker locally
 
 ```bash
 export SQLITE_PATH=./dev.db

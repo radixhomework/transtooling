@@ -24,8 +24,8 @@ ALLOWED_EXTENSIONS = {".mp3", ".wav", ".m4a", ".ogg", ".webm"}
 def _get_app_limits(session: Session) -> AppSettings:
     row = session.get(AppSettings, 1)
     if not row:
-        # Filet de sécurité si l'initialisation au démarrage n'a pas eu lieu
-        # (ex: contexte de test ne passant pas par le lifecycle standard).
+        # Safety net if startup initialization did not run (e.g. a test
+        # context that bypasses the standard lifecycle).
         row = AppSettings(
             id=1,
             max_file_size_mb=settings.default_max_file_size_mb,
@@ -39,9 +39,9 @@ def _get_app_limits(session: Session) -> AppSettings:
 
 def _probe_duration_seconds(file_path: str) -> float:
     """
-    Utilise ffprobe (fourni par le paquet ffmpeg, déjà présent dans l'image
-    worker et nécessaire aussi côté backend pour valider l'upload) pour
-    obtenir la durée exacte du fichier audio.
+    Uses ffprobe (from the ffmpeg package, already present in the worker
+    image and also required on the backend to validate uploads) to get the
+    exact duration of the audio file.
     """
     try:
         result = subprocess.run(
@@ -64,8 +64,8 @@ def _probe_duration_seconds(file_path: str) -> float:
             detail="Impossible de lire le fichier audio (format invalide ou corrompu)",
         ) from exc
     except FileNotFoundError as exc:
-        # ffprobe absent de l'image : erreur de configuration serveur, pas de
-        # la faute de l'utilisateur.
+        # ffprobe missing from the image: a server configuration error,
+        # not the user's fault.
         raise HTTPException(
             status_code=500,
             detail="Erreur serveur : ffprobe non disponible",
@@ -74,9 +74,9 @@ def _probe_duration_seconds(file_path: str) -> float:
 
 def _vtt_to_plain_text(vtt_content: str) -> str:
     """
-    Convertit le .vtt produit par le worker en texte brut : un paragraphe par
-    segment, sans les horodatages. Le format d'entrée est celui généré par
-    worker/app/vtt.py (une ligne de timing « --> », puis le texte du segment).
+    Converts the .vtt produced by the worker to plain text: one paragraph
+    per segment, without timestamps. The input format is the one produced by
+    worker/app/vtt.py (a "-->" timing line, then the segment text).
     """
     paragraphs = []
     for block in vtt_content.replace("\r\n", "\n").split("\n\n"):
@@ -109,8 +109,8 @@ async def create_job(
             detail=f"Format non supporté. Formats acceptés : {', '.join(sorted(ALLOWED_EXTENSIONS))}",
         )
 
-    # Modèle à utiliser : celui choisi par l'utilisateur s'il en a proposé un
-    # (il doit être téléchargé ET activé), sinon le modèle par défaut.
+    # Model to use: the one chosen by the user if any (it must be
+    # downloaded AND enabled), otherwise the default model.
     if model:
         chosen_model = session.exec(
             select(WhisperModel).where(
@@ -265,8 +265,8 @@ def cancel_job(
     if job.status not in (JobStatus.pending, JobStatus.processing, JobStatus.cancelling):
         raise HTTPException(status_code=409, detail="Cette transcription ne peut plus être annulée")
 
-    # Le worker détecte le fanion pendant le traitement (ou dès sa prise en
-    # charge si le job est encore en file) et passe le job en « cancelled ».
+    # The worker detects the flag during processing (or as soon as it picks
+    # the job up if it is still queued) and marks the job as "cancelled".
     job.cancel_requested = True
     session.add(job)
     session.commit()
@@ -291,8 +291,8 @@ def delete_job(
     if job.result_vtt_path and os.path.exists(job.result_vtt_path):
         os.remove(job.result_vtt_path)
 
-    # Si le job n'a pas encore été traité par le worker, l'audio temporaire
-    # peut encore exister : le nettoyer aussi dans ce cas.
+    # If the job has not been processed by the worker yet, the temporary
+    # audio may still exist: clean it up too in that case.
     if job.audio_tmp_filename:
         audio_path = os.path.join(settings.audio_tmp_path, job.audio_tmp_filename)
         if os.path.exists(audio_path):

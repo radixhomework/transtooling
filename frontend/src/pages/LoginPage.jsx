@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext.jsx";
+import { setLanguage } from "../i18n";
 import "./LoginPage.css";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const { t, i18n } = useTranslation();
+  const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const { login: doLogin } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -16,16 +19,16 @@ export default function LoginPage() {
     setError(null);
     setIsSubmitting(true);
     try {
-      await login(email, password);
+      await doLogin(login, password);
       navigate("/");
     } catch (err) {
       const status = err.response?.status;
       if (status === 429) {
-        setError("Trop de tentatives échouées. Réessayez dans quelques minutes.");
+        setError(t("login.errorRateLimited"));
       } else if (status === 403) {
-        setError("Ce compte est désactivé. Contactez un administrateur.");
+        setError(t("login.errorDisabled"));
       } else {
-        setError("Identifiant ou mot de passe incorrect.");
+        setError(t("login.errorInvalid"));
       }
     } finally {
       setIsSubmitting(false);
@@ -40,20 +43,35 @@ export default function LoginPage() {
         </div>
         <h1>TransTooLing</h1>
 
+        <div className="login-lang-switch" role="group" aria-label={t("nav.languageSwitch")}>
+          <button
+            className={i18n.language === "en" ? "is-active" : ""}
+            onClick={() => setLanguage("en")}
+          >
+            EN
+          </button>
+          <button
+            className={i18n.language === "fr" ? "is-active" : ""}
+            onClick={() => setLanguage("fr")}
+          >
+            FR
+          </button>
+        </div>
+
         <form onSubmit={handleSubmit} className="login-form">
           <div className="field">
-            <label htmlFor="login">Identifiant</label>
+            <label htmlFor="login">{t("login.login")}</label>
             <input
               id="login"
               type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={login}
+              onChange={(e) => setLogin(e.target.value)}
               required
               autoFocus
             />
           </div>
           <div className="field">
-            <label htmlFor="password">Mot de passe</label>
+            <label htmlFor="password">{t("login.password")}</label>
             <input
               id="password"
               type="password"
@@ -66,7 +84,7 @@ export default function LoginPage() {
           {error && <p className="error-text">{error}</p>}
 
           <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-            {isSubmitting ? "Connexion..." : "Se connecter"}
+            {isSubmitting ? t("login.submitting") : t("login.submit")}
           </button>
         </form>
       </div>

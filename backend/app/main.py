@@ -37,9 +37,9 @@ def on_startup():
 
 
 def _ensure_admin_account() -> None:
-    """Crée le compte administrateur initial défini dans le .env, s'il n'existe pas déjà."""
-    # ADMIN_LOGIN est la variable attendue ; ADMIN_EMAIL reste lu en
-    # héritage pour les installations antérieures au passage aux identifiants.
+    """Creates the initial administrator account defined in .env, if it does not exist yet."""
+    # ADMIN_LOGIN is the expected variable; ADMIN_EMAIL is still read as a
+    # legacy fallback for installations predating the login-based accounts.
     admin_login = settings.admin_login or settings.admin_email or "admin"
     with Session(engine) as session:
         existing_admin = session.exec(
@@ -59,7 +59,7 @@ def _ensure_admin_account() -> None:
 
 
 def _ensure_app_settings() -> None:
-    """Crée la ligne singleton de paramètres applicatifs si elle n'existe pas encore."""
+    """Creates the singleton settings row if it does not exist yet."""
     with Session(engine) as session:
         existing = session.get(AppSettingsModel, 1)
         if existing:

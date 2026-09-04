@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import * as jobsApi from "../api/jobs";
 import * as modelsApi from "../api/whisperModels";
 import StatusBadge from "../components/StatusBadge.jsx";
@@ -8,19 +9,8 @@ import "./DashboardPage.css";
 const ACCEPTED_EXTENSIONS = [".mp3", ".wav", ".m4a", ".ogg", ".webm"];
 const POLL_INTERVAL_MS = 4000;
 
-function formatDate(isoString) {
-  if (!isoString) return "—";
-  const date = new Date(isoString);
-  return date.toLocaleString("fr-FR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 export default function DashboardPage() {
+  const { t, i18n } = useTranslation();
   const [jobs, setJobs] = useState([]);
   const [isLoadingJobs, setIsLoadingJobs] = useState(true);
   const [uploadError, setUploadError] = useState(null);
@@ -33,14 +23,26 @@ export default function DashboardPage() {
   const fileInputRef = useRef(null);
   const pollRef = useRef(null);
 
+  function formatDate(isoString) {
+    if (!isoString) return "—";
+    const locale = i18n.language === "en" ? "en-GB" : "fr-FR";
+    return new Date(isoString).toLocaleString(locale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
   const fetchJobs = useCallback(async () => {
     try {
       const data = await jobsApi.listJobs();
       data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setJobs(data);
     } catch {
-      // Erreur silencieuse sur le polling périodique : on ne veut pas
-      // interrompre l'utilisateur pour un échec réseau transitoire.
+      // Silent failure on periodic polling: we do not want to
+      // interrupt the user for a transient network failure.
     } finally {
       setIsLoadingJobs(false);
     }
@@ -51,8 +53,8 @@ export default function DashboardPage() {
   }, [fetchJobs]);
 
   useEffect(() => {
-    // Modèles proposés pour l'upload (sélecteur) : affiché seulement s'il y
-    // en a plusieurs, le modèle par défaut couvrant le cas simple.
+    // Models offered for upload (selector): displayed only when there are
+    // several; the default model covers the simple case.
     modelsApi
       .listEnabledModels()
       .then((models) => setEnabledModels(models))
@@ -69,23 +71,9 @@ export default function DashboardPage() {
     }
   }, [jobs, fetchJobs]);
 
-  function validateFile(file) {
-    const ext = "." + file.name.split(".").pop().toLowerCase();
-    if (!ACCEPTED_EXTENSIONS.includes(ext)) {
-      return `Format non supporté (${ext}). Formats acceptés : ${ACCEPTED_EXTENSIONS.join(", ")}`;
-    }
-    return null;
-  }
-
   async function handleFiles(fileList) {
     const file = fileList?.[0];
     if (!file) return;
-
-    const validationError = validateFile(file);
-    if (validationError) {
-      setUploadError(validationError);
-      return;
-    }
 
     setUploadError(null);
     setIsUploading(true);
@@ -104,7 +92,7 @@ export default function DashboardPage() {
       await fetchJobs();
     } catch (err) {
       const detail = err.response?.data?.detail;
-      setUploadError(detail || "Échec de l'envoi du fichier. Réessayez.");
+      setUploadError(detail || t("dashboard.errorUpload"));
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -123,7 +111,7 @@ export default function DashboardPage() {
       await jobsApi.cancelJob(job.id);
       await fetchJobs();
     } catch {
-      setUploadError("Impossible d'annuler cette transcription.");
+      setUploadError(t("dashboard.errorCancel"));
     }
   }
 
@@ -140,7 +128,7 @@ export default function DashboardPage() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch {
-      setUploadError("Impossible de télécharger la transcription.");
+      setUploadError(t("dashboard.errorDownload"));
     }
   }
 
@@ -150,15 +138,15 @@ export default function DashboardPage() {
       await jobsApi.deleteJob(job.id);
       setJobs((prev) => prev.filter((j) => j.id !== job.id));
     } catch {
-      setUploadError("Impossible de supprimer cette transcription.");
+      setUploadError(t("dashboard.errorDelete"));
     }
   }
 
   return (
     <div className="dashboard">
       <section className="dashboard-header">
-        <h1>Transcription</h1>
-        <p>Déposez un fichier audio en français pour obtenir une transcription horodatée.</p>
+        <h1>{t("dashboard.title")}</h1>
+        <p>{t("dashboard.subtitle")}</p>
       </section>
 
       <section
@@ -173,32 +161,34 @@ export default function DashboardPage() {
         {isUploading ? (
           <div className="upload-progress">
             <Waveform size="lg" />
-            <p>Envoi en cours… {uploadProgress}%</p>
+            <p>{t("dashboard.uploading", { percent: uploadProgress })}</p>
           </div>
         ) : (
           <>
-            <p className="upload-zone-title">Glissez-déposez un fichier audio ici</p>
+            <p className="upload-zone-title">{t("dashboard.dropTitle")}</p>
             <p className="upload-zone-subtitle">
-              ou{" "}
+              {t("dashboard.or")}{" "}
               <button
                 type="button"
                 className="upload-zone-browse"
                 onClick={() => fileInputRef.current?.click()}
               >
-                parcourez vos fichiers
+                {t("dashboard.browse")}
               </button>
             </p>
             <p className="upload-zone-formats">{ACCEPTED_EXTENSIONS.join(" · ")}</p>
             {enabledModels.length > 1 && (
               <div className="upload-model-choice">
-                <label htmlFor="model-select">Modèle :</label>
+                <label htmlFor="model-select">{t("dashboard.modelLabel")}</label>
                 <select
                   id="model-select"
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
                 >
                   <option value="">
-                    Par défaut ({enabledModels.find((m) => m.is_default)?.name || "—"})
+                    {t("dashboard.modelDefault", {
+                      name: enabledModels.find((m) => m.is_default)?.name || "—",
+                    })}
                   </option>
                   {enabledModels
                     .filter((m) => !m.is_default)
@@ -230,17 +220,17 @@ export default function DashboardPage() {
           </div>
         ) : jobs.length === 0 ? (
           <div className="empty-state card">
-            <p>Aucune transcription pour l'instant. Déposez un premier fichier ci-dessus.</p>
+            <p>{t("dashboard.empty")}</p>
           </div>
         ) : (
           <div className="card">
             <table className="table">
               <thead>
                 <tr>
-                  <th>Fichier</th>
-                  <th>Statut</th>
-                  <th>Modèle</th>
-                  <th>Créée le</th>
+                  <th>{t("dashboard.colFile")}</th>
+                  <th>{t("dashboard.colStatus")}</th>
+                  <th>{t("dashboard.colModel")}</th>
+                  <th>{t("dashboard.colDate")}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -275,7 +265,7 @@ export default function DashboardPage() {
                           disabled={job.status === "cancelling"}
                           onClick={() => handleCancel(job)}
                         >
-                          Annuler
+                          {t("common.cancelJob")}
                         </button>
                       )}
                       {job.status === "done" && (
@@ -292,7 +282,7 @@ export default function DashboardPage() {
                               setDownloadMenuJobId(downloadMenuJobId === job.id ? null : job.id)
                             }
                           >
-                            Télécharger ▾
+                            {t("common.download")} ▾
                           </button>
                           {downloadMenuJobId === job.id && (
                             <div className="download-menu-list">
@@ -302,7 +292,7 @@ export default function DashboardPage() {
                                   handleDownload(job, "vtt");
                                 }}
                               >
-                                WebVTT horodaté (.vtt)
+                                {t("dashboard.downloadVtt")}
                               </button>
                               <button
                                 onClick={() => {
@@ -310,14 +300,14 @@ export default function DashboardPage() {
                                   handleDownload(job, "txt");
                                 }}
                               >
-                                Texte brut (.txt)
+                                {t("dashboard.downloadTxt")}
                               </button>
                             </div>
                           )}
                         </div>
                       )}
                       <button className="btn btn-danger btn-sm" onClick={() => handleDelete(job)}>
-                        Supprimer
+                        {t("common.delete")}
                       </button>
                     </td>
                   </tr>

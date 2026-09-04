@@ -13,7 +13,7 @@ def test_create_job_requires_auth(client, short_audio_file):
 
 
 def test_create_job_without_default_model_fails(client, admin_headers, short_audio_file):
-    # Aucun modèle activé par défaut à ce stade (fixture enabled_default_model non utilisée)
+    # No default enabled model at this point (enabled_default_model fixture not used)
     with open(short_audio_file, "rb") as f:
         response = client.post(
             "/api/jobs",
@@ -36,7 +36,7 @@ def test_create_job_success(client, admin_headers, short_audio_file, enabled_def
     assert data["language"] == "fr"
     assert data["model_used"] == "tiny"
     assert data["filename_original"] == "test.wav"
-    # La durée mesurée par ffprobe est conservée et la progression démarre à 0.
+    # The ffprobe-measured duration is stored and progress starts at 0.
     assert data["audio_duration_seconds"] > 0
     assert data["progress"] == 0
 
@@ -66,8 +66,8 @@ def test_create_job_rejects_invalid_audio_content(
 def test_create_job_rejects_file_exceeding_duration_limit(
     client, admin_headers, short_audio_file, enabled_default_model
 ):
-    # Le fichier de test fait ~1 seconde ; on fixe une limite de durée
-    # volontairement inférieure (0.01 min = 0.6s) pour la faire dépasser.
+    # The test file is ~1 second long; set a deliberately lower duration
+    # limit (0.01 min = 0.6s) so the file exceeds it.
     patch_response = client.patch(
         "/api/admin/settings",
         json={"max_duration_min": 0.01},
@@ -96,7 +96,7 @@ def test_create_job_rejects_file_exceeding_duration_limit(
 def test_list_jobs_returns_only_own_jobs_for_regular_user(
     client, admin_headers, short_audio_file, enabled_default_model
 ):
-    # Créer un utilisateur standard
+    # Create a standard user
     create_resp = client.post(
         "/api/users",
         json={"login": "jobsowner", "password": "OwnerPass1", "role": "user"},
@@ -126,7 +126,7 @@ def test_list_jobs_returns_only_own_jobs_for_regular_user(
 
 
 def test_get_job_forbidden_for_other_user(client, admin_headers, short_audio_file, enabled_default_model):
-    # Utilisateur A crée un job
+    # User A creates a job
     client.post(
         "/api/users",
         json={"login": "userA", "password": "UserAPass1", "role": "user"},
@@ -145,7 +145,7 @@ def test_get_job_forbidden_for_other_user(client, admin_headers, short_audio_fil
         )
     job_id = job_resp.json()["id"]
 
-    # Utilisateur B tente d'accéder au job de A
+    # User B tries to access A's job
     client.post(
         "/api/users",
         json={"login": "userB", "password": "UserBPass1", "role": "user"},
@@ -196,12 +196,12 @@ def test_owner_can_delete_own_job(client, admin_headers, short_audio_file, enabl
     assert get_response.status_code == 404
 
 
-# --- Choix du modèle à l'upload ---
+# --- Model choice at upload ---
 
 
 def _set_model_state(name: str, **kwargs):
-    # Les lignes whisper_models sont créées au premier appel de la liste
-    # admin : créer la ligne si elle n'existe pas encore dans ce contexte.
+    # whisper_models rows are created on the first admin list call:
+    # create the row if it does not exist yet in this context.
     with Session(engine) as session:
         row = session.exec(select(WhisperModel).where(WhisperModel.name == name)).first()
         if not row:
@@ -238,7 +238,7 @@ def test_create_job_with_unknown_model_rejected(client, admin_headers, short_aud
 
 
 def test_create_job_with_disabled_model_rejected(client, admin_headers, short_audio_file, enabled_default_model):
-    # Téléchargé mais non activé : refusé pour un job utilisateur.
+    # Downloaded but not enabled: rejected for a user job.
     _set_model_state("base", status=ModelStatus.downloaded, is_enabled=False)
 
     with open(short_audio_file, "rb") as f:
@@ -251,7 +251,7 @@ def test_create_job_with_disabled_model_rejected(client, admin_headers, short_au
     assert response.status_code == 400
 
 
-# --- Téléchargement du résultat (vtt / txt) ---
+# --- Result download (vtt / txt) ---
 
 
 def _finish_job_with_vtt(job_id: int) -> None:
@@ -313,7 +313,7 @@ def test_download_job_in_vtt_format_still_works(client, admin_headers, short_aud
     assert response.status_code == 422
 
 
-# --- Annulation ---
+# --- Cancellation ---
 
 
 def test_cancel_pending_job(client, admin_headers, short_audio_file, enabled_default_model):

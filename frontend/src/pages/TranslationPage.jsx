@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import * as translationApi from "../api/translation";
 import StatusBadge from "../components/StatusBadge.jsx";
 import Waveform from "../components/Waveform.jsx";
@@ -6,23 +7,13 @@ import "./TranslationPage.css";
 
 const POLL_INTERVAL_MS = 4000;
 
-const DIRECTION_LABELS = {
-  "fr-en": "Français → Anglais",
-  "en-fr": "Anglais → Français",
+const DIRECTION_KEYS = {
+  "fr-en": "directionFrEn",
+  "en-fr": "directionEnFr",
 };
 
-function formatDate(isoString) {
-  if (!isoString) return "—";
-  return new Date(isoString).toLocaleString("fr-FR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 export default function TranslationPage() {
+  const { t, i18n } = useTranslation();
   const [tab, setTab] = useState("text");
   const [directions, setDirections] = useState([]);
   const [direction, setDirection] = useState("");
@@ -35,12 +26,24 @@ export default function TranslationPage() {
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
+  function formatDate(isoString) {
+    if (!isoString) return "—";
+    const locale = i18n.language === "en" ? "en-GB" : "fr-FR";
+    return new Date(isoString).toLocaleString(locale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
   const fetchJobs = useCallback(async () => {
     try {
       const data = await translationApi.listTranslationJobs();
       setJobs(data);
     } catch {
-      // Erreur silencieuse sur le polling périodique.
+      // Silent failure on periodic polling.
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +82,7 @@ export default function TranslationPage() {
       setText("");
       await fetchJobs();
     } catch (err) {
-      setError(err.response?.data?.detail || "Échec de la création du job de traduction.");
+      setError(err.response?.data?.detail || t("translation.errorCreate"));
     } finally {
       setIsSubmitting(false);
     }
@@ -101,7 +104,7 @@ export default function TranslationPage() {
       if (fileInputRef.current) fileInputRef.current.value = "";
       await fetchJobs();
     } catch (err) {
-      setError(err.response?.data?.detail || "Échec de l'envoi de l'archive.");
+      setError(err.response?.data?.detail || t("translation.errorArchive"));
     } finally {
       setIsSubmitting(false);
       setUploadPercent(0);
@@ -113,7 +116,7 @@ export default function TranslationPage() {
       await translationApi.cancelTranslationJob(job.id);
       await fetchJobs();
     } catch {
-      setError("Impossible d'annuler ce job.");
+      setError(t("translation.errorCancel"));
     }
   }
 
@@ -129,32 +132,32 @@ export default function TranslationPage() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch {
-      setError("Impossible de télécharger le résultat.");
+      setError(t("translation.errorDownload"));
     }
   }
 
   async function handleDelete(job) {
-    if (!window.confirm("Supprimer ce job de traduction ?")) return;
+    if (!window.confirm(t("translation.deleteConfirm"))) return;
     try {
       await translationApi.deleteTranslationJob(job.id);
       setJobs((prev) => prev.filter((j) => j.id !== job.id));
     } catch {
-      setError("Impossible de supprimer ce job.");
+      setError(t("translation.errorDelete"));
     }
   }
 
   return (
     <div className="translation-page">
       <section className="translation-header">
-        <h1>Traduction</h1>
-        <p>Traduisez du texte ou des archives de fichiers techniques, en local.</p>
+        <h1>{t("translation.title")}</h1>
+        <p>{t("translation.subtitle")}</p>
       </section>
 
       {error && <p className="error-text">{error}</p>}
 
       {!hasActiveModel ? (
         <div className="empty-state card">
-          <p>Aucun modèle de traduction actif. Contactez un administrateur.</p>
+          <p>{t("translation.noModel")}</p>
         </div>
       ) : (
         <div className="card translation-form">
@@ -164,19 +167,19 @@ export default function TranslationPage() {
               className={`translation-tab ${tab === "text" ? "is-active" : ""}`}
               onClick={() => setTab("text")}
             >
-              Texte
+              {t("translation.tabText")}
             </button>
             <button
               type="button"
               className={`translation-tab ${tab === "archive" ? "is-active" : ""}`}
               onClick={() => setTab("archive")}
             >
-              Archive ZIP
+              {t("translation.tabArchive")}
             </button>
           </div>
 
           <div className="field direction-field">
-            <label htmlFor="translation-direction">Sens de traduction</label>
+            <label htmlFor="translation-direction">{t("translation.directionLabel")}</label>
             <select
               id="translation-direction"
               value={direction}
@@ -185,7 +188,7 @@ export default function TranslationPage() {
             >
               {directions.map((d) => (
                 <option key={d} value={d}>
-                  {DIRECTION_LABELS[d] || d}
+                  {t(`translation.${DIRECTION_KEYS[d] || d}`)}
                 </option>
               ))}
             </select>
@@ -194,25 +197,25 @@ export default function TranslationPage() {
           {tab === "text" ? (
             <form onSubmit={handleSubmitText} className="translation-text-form">
               <div className="field">
-                <label htmlFor="translation-text">Texte à traduire</label>
+                <label htmlFor="translation-text">{t("translation.textLabel")}</label>
                 <textarea
                   id="translation-text"
                   rows={8}
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder="Saisissez ou collez le texte à traduire…"
+                  placeholder={t("translation.textPlaceholder")}
                   disabled={isSubmitting}
                   required
                 />
               </div>
               <button type="submit" className="btn btn-primary" disabled={isSubmitting || !text.trim()}>
-                {isSubmitting ? "Envoi…" : "Traduire"}
+                {isSubmitting ? t("translation.submitting") : t("translation.submitText")}
               </button>
             </form>
           ) : (
             <form onSubmit={handleSubmitArchive} className="translation-archive-form">
               <div className="field">
-                <label htmlFor="translation-archive">Archive ZIP (.zip)</label>
+                <label htmlFor="translation-archive">{t("translation.archiveLabel")}</label>
                 <input
                   ref={fileInputRef}
                   id="translation-archive"
@@ -222,16 +225,15 @@ export default function TranslationPage() {
                   disabled={isSubmitting}
                   required
                 />
-                <p className="translation-archive-hint">
-                  Les fichiers JSON et HTML (selon la configuration admin) sont traduits, les
-                  autres sont copiés tels quels. Noms et arborescence conservés.
-                </p>
+                <p className="translation-archive-hint">{t("translation.archiveHint")}</p>
                 {isSubmitting && uploadPercent > 0 && (
                   <div className="progress">
                     <div className="progress-bar">
                       <div className="progress-fill" style={{ "--progress": uploadPercent / 100 }} />
                     </div>
-                    <span className="progress-label">Envoi {uploadPercent}%</span>
+                    <span className="progress-label">
+                      {t("translation.uploading", { percent: uploadPercent })}
+                    </span>
                   </div>
                 )}
               </div>
@@ -240,7 +242,7 @@ export default function TranslationPage() {
                 className="btn btn-primary"
                 disabled={isSubmitting || !archiveFile}
               >
-                {isSubmitting ? "Envoi…" : "Traduire l'archive"}
+                {isSubmitting ? t("translation.submitting") : t("translation.submitArchive")}
               </button>
             </form>
           )}
@@ -254,15 +256,19 @@ export default function TranslationPage() {
           </div>
         ) : jobs.length === 0 ? (
           <div className="empty-state card">
-            <p>Aucune traduction pour l'instant.</p>
+            <p>{t("translation.empty")}</p>
           </div>
         ) : (
           <div className="translation-jobs-list">
             {jobs.map((job) => (
               <div key={job.id} className="card translation-job-card">
                 <div className="translation-job-header">
-                  <span className="badge badge-done">{job.job_type === "archive" ? "Archive" : "Texte"}</span>
-                  <span className="mono translation-job-direction">{DIRECTION_LABELS[job.direction] || job.direction}</span>
+                  <span className="badge badge-done">
+                    {job.job_type === "archive" ? t("translation.badgeArchive") : t("translation.badgeText")}
+                  </span>
+                  <span className="mono translation-job-direction">
+                    {t(`translation.${DIRECTION_KEYS[job.direction] || job.direction}`)}
+                  </span>
                   <StatusBadge status={job.status} />
                   <span className="mono translation-job-date">{formatDate(job.created_at)}</span>
                   <span className="translation-job-actions">
@@ -272,16 +278,18 @@ export default function TranslationPage() {
                         disabled={job.status === "cancelling"}
                         onClick={() => handleCancel(job)}
                       >
-                        Annuler
+                        {t("common.cancelJob")}
                       </button>
                     )}
                     {job.status === "done" && (
                       <button className="btn btn-secondary btn-sm" onClick={() => handleDownload(job)}>
-                        Télécharger {job.job_type === "archive" ? "(.zip)" : "(.txt)"}
+                        {job.job_type === "archive"
+                          ? t("translation.downloadZip")
+                          : t("translation.downloadTxt")}
                       </button>
                     )}
                     <button className="btn btn-danger btn-sm" onClick={() => handleDelete(job)}>
-                      Supprimer
+                      {t("common.delete")}
                     </button>
                   </span>
                 </div>
@@ -293,7 +301,7 @@ export default function TranslationPage() {
                 {job.status === "processing" && (
                   <div className="translation-processing">
                     <Waveform size="sm" />
-                    <span>Traduction en cours…</span>
+                    <span>{t("translation.processing")}</span>
                   </div>
                 )}
 
@@ -301,9 +309,7 @@ export default function TranslationPage() {
                   <div className="translation-result">
                     <pre className="translation-result-text">{job.result_preview}</pre>
                     {job.result_truncated && (
-                      <p className="translation-truncated">
-                        Aperçu tronqué — téléchargez le résultat complet pour le texte intégral.
-                      </p>
+                      <p className="translation-truncated">{t("translation.truncated")}</p>
                     )}
                   </div>
                 )}
@@ -311,12 +317,16 @@ export default function TranslationPage() {
                 {job.status === "done" && job.job_type === "archive" && job.report && (
                   <div className="translation-report">
                     <p>
-                      {job.report.translated} fichier(s) traduit(s) · {job.report.copied} copié(s)
-                      {job.report.errors > 0 && ` · ${job.report.errors} en erreur`}
+                      {t("translation.reportSummary", {
+                        translated: job.report.translated,
+                        copied: job.report.copied,
+                      })}
+                      {job.report.errors > 0 &&
+                        " " + t("translation.reportErrorSuffix", { count: job.report.errors })}
                     </p>
                     {job.report.error_details?.length > 0 && (
                       <details className="translation-report-details">
-                        <summary>Détail des erreurs</summary>
+                        <summary>{t("translation.reportDetails")}</summary>
                         <ul>
                           {job.report.error_details.map((detail) => (
                             <li key={detail.file}>

@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext.jsx";
 import * as authApi from "../api/auth";
 import "./AccountPage.css";
 
 export default function AccountPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -18,7 +20,7 @@ export default function AccountPage() {
     setSuccess(false);
 
     if (newPassword !== confirmPassword) {
-      setError("La confirmation ne correspond pas au nouveau mot de passe.");
+      setError(t("account.errorMismatch"));
       return;
     }
 
@@ -32,11 +34,11 @@ export default function AccountPage() {
     } catch (err) {
       const status = err.response?.status;
       if (status === 400) {
-        setError("Mot de passe actuel incorrect.");
+        setError(t("account.errorCurrent"));
       } else if (status === 422) {
-        setError("Le nouveau mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.");
+        setError(t("account.errorPolicy"));
       } else {
-        setError("Une erreur est survenue. Réessayez.");
+        setError(t("account.errorGeneric"));
       }
     } finally {
       setIsSubmitting(false);
@@ -45,24 +47,26 @@ export default function AccountPage() {
 
   return (
     <div className="account-page">
-      <h1>Mon compte</h1>
+      <h1>{t("account.title")}</h1>
 
       <div className="card account-info">
         <div>
-          <span className="account-info-label">Email</span>
+          <span className="account-info-label">{t("account.loginLabel")}</span>
           <span className="mono">{user?.login}</span>
         </div>
         <div>
-          <span className="account-info-label">Rôle</span>
-          <span className="mono">{user?.role === "admin" ? "Administrateur" : "Utilisateur"}</span>
+          <span className="account-info-label">{t("account.roleLabel")}</span>
+          <span className="mono">
+            {user?.role === "admin" ? t("common.roleAdmin") : t("common.roleUser")}
+          </span>
         </div>
       </div>
 
       <div className="card account-form-card">
-        <h2>Changer de mot de passe</h2>
+        <h2>{t("account.changeTitle")}</h2>
         <form onSubmit={handleSubmit} className="account-form">
           <div className="field">
-            <label htmlFor="current-password">Mot de passe actuel</label>
+            <label htmlFor="current-password">{t("account.currentPassword")}</label>
             <input
               id="current-password"
               type="password"
@@ -72,7 +76,7 @@ export default function AccountPage() {
             />
           </div>
           <div className="field">
-            <label htmlFor="new-password">Nouveau mot de passe</label>
+            <label htmlFor="new-password">{t("account.newPassword")}</label>
             <input
               id="new-password"
               type="password"
@@ -82,7 +86,7 @@ export default function AccountPage() {
             />
           </div>
           <div className="field">
-            <label htmlFor="confirm-password">Confirmer le nouveau mot de passe</label>
+            <label htmlFor="confirm-password">{t("account.confirmPassword")}</label>
             <input
               id="confirm-password"
               type="password"
@@ -93,10 +97,10 @@ export default function AccountPage() {
           </div>
 
           {error && <p className="error-text">{error}</p>}
-          {success && <p className="success-text">Mot de passe mis à jour.</p>}
+          {success && <p className="success-text">{t("account.success")}</p>}
 
           <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-            {isSubmitting ? "Mise à jour..." : "Mettre à jour le mot de passe"}
+            {isSubmitting ? t("account.submitting") : t("account.submit")}
           </button>
         </form>
       </div>

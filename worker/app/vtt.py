@@ -1,4 +1,4 @@
-"""Génération de fichiers WebVTT à partir des segments produits par faster-whisper."""
+"""WebVTT generation from faster-whisper segments."""
 
 from app.text_postprocess import postprocess_segment_text
 
@@ -12,10 +12,10 @@ def _format_timestamp(seconds: float) -> str:
 
 def segments_to_vtt(segments) -> str:
     """
-    Convertit les segments faster-whisper (avec .start, .end, .text) en
-    contenu WebVTT. Le texte de chaque segment est nettoyé (espaces
-    superflus, espace avant ponctuation, majuscule initiale) via
-    app.text_postprocess avant d'être écrit.
+    Converts faster-whisper segments (with .start, .end, .text) to WebVTT
+    content. Each segment's text is cleaned (extra spaces, space before
+    punctuation, initial capital) through app.text_postprocess before
+    being written.
     """
     lines = ["WEBVTT", ""]
     for segment in segments:

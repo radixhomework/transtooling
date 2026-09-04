@@ -1,4 +1,4 @@
-# --- Étape 1 : build ---
+# --- Step 1: build ---
 FROM node:20-alpine AS build
 
 WORKDIR /app
@@ -13,7 +13,7 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 RUN npm run build
 
-# --- Étape 2 : service statique via Nginx ---
+# --- Step 2: static serving via Nginx ---
 FROM nginx:1.27-alpine
 
 COPY --from=build /app/dist /usr/share/nginx/html

@@ -1,33 +1,33 @@
-/* Polices embarquées localement (latin + latin-ext) : aucune requête
-   externe, cohérent avec le traitement 100 % local du produit. */
+/* Fonts embedded locally (latin + latin-ext): no external requests,
+   consistent with the product's 100% local processing. */
 @import "./fonts.css";
 
 :root {
   /* --- Couleurs (charte radixhomework.github.io) --- */
   --color-bg: #fcfcfa;
   --color-surface: #fdfaf3; /* ivoire */
-  --color-surface-sunken: #eae5d8; /* parchemin à demi-teinte */
-  --color-parchment: #d8d0bd;
+  --color-surface-sunken: #eae5d8; /* half-tone parchment */
+  --color-parchment: #d8d0bd; /* parchment */
 
-  --color-ink: #1e211c; /* noir racine */
-  --color-ink-soft: #76604e; /* brun terre */
+  --color-ink: #1e211c; /* root black */
+  --color-ink-soft: #76604e; /* earth brown */
   --color-ink-faint: #a18f7c;
 
   --color-border: rgba(30, 33, 28, 0.2);
   --color-border-strong: rgba(30, 33, 28, 0.4);
 
-  --color-accent: #4d5947; /* vert mousse */
+  --color-accent: #4d5947; /* moss green */
   --color-accent-hover: #3f4a3b;
   --color-accent-soft: #e3e7dd;
 
-  --color-copper: #9a7656; /* cuivre patiné : accent secondaire */
+  --color-copper: #9a7656; /* patinated copper: secondary accent */
   --color-copper-soft: #efe6dc;
 
   --color-status-pending: #9a7656;
   --color-status-pending-soft: #efe6dc;
   --color-status-done: #4d5947;
   --color-status-done-soft: #e3e7dd;
-  --color-status-error: #8a5e61; /* rose fané */
+  --color-status-error: #8a5e61; /* faded pink */
   --color-status-error-soft: #efe1e0;
 
   /* --- Typographie --- */
@@ -35,7 +35,7 @@
   --font-ui: "Source Sans 3", "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 
-  /* --- Espacement / forme (langage éditorial : angles droits) --- */
+  /* --- Spacing / shape (editorial language: square corners) --- */
   --radius-sm: 0;
   --radius-md: 0;
   --radius-lg: 0;
@@ -115,7 +115,7 @@ a:hover {
   }
 }
 
-/* --- Primitives réutilisables --- */
+/* --- Reusable primitives --- */
 
 .btn {
   display: inline-flex;
@@ -305,8 +305,8 @@ a:hover {
   height: 100%;
   background: var(--color-accent);
   transform-origin: left center;
-  /* scaleX (et non width) : composition animée sans reflow, la progression
-     attendue est posée en variable par le composant (0 → 1). */
+  /* scaleX (not width): animated composition without reflow; the expected
+     progress is set as a variable by the component (0 -> 1). */
   transform: scaleX(var(--progress, 0));
   transition: transform 0.4s ease;
 }

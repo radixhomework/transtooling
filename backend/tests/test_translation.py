@@ -15,7 +15,7 @@ from app.models.translation import (
 
 
 def _enable_translation_model(direction: str = "fr-en"):
-    """Insère/marque un modèle de traduction comme téléchargé+activé."""
+    """Inserts/marks a translation model as downloaded+enabled."""
     with Session(engine) as session:
         row = session.exec(
             select(TranslationModel).where(TranslationModel.direction == direction)
@@ -97,7 +97,7 @@ def test_text_job_preview_truncated(client, admin_headers):
     )
     job_id = job_resp.json()["id"]
 
-    # Simule la fin du traitement par le worker (non lancé dans les tests).
+    # Simulates the worker finishing the job (not running in tests).
     with Session(engine) as session:
         job = session.get(TranslationJob, job_id)
         job.status = TranslationJobStatus.done
@@ -105,7 +105,7 @@ def test_text_job_preview_truncated(client, admin_headers):
         session.add(job)
         session.commit()
 
-    # Abaisse le seuil d'aperçu pour couvrir la troncature.
+    # Lower the preview threshold to cover truncation.
     patch = client.patch(
         "/api/admin/settings",
         json={"preview_truncate_chars": 100},
@@ -119,7 +119,7 @@ def test_text_job_preview_truncated(client, admin_headers):
     assert len(data["result_preview"]) == 100
     assert data["result_truncated"] is True
 
-    # Le texte complet reste téléchargeable.
+    # The full text remains downloadable.
     download = client.get(f"/api/translation/jobs/{job_id}/download", headers=admin_headers)
     assert download.status_code == 200
     assert len(download.text) == 5000
@@ -198,7 +198,7 @@ def test_archive_job_rejects_zip_slip(client, admin_headers):
 
 def test_archive_job_rejects_too_many_files(client, admin_headers):
     _enable_translation_model("fr-en")
-    # Limite abaissée à 2 fichiers pour le test.
+    # Limit lowered to 2 files for the test.
     client.patch("/api/admin/settings", json={"max_archive_files_count": 2}, headers=admin_headers)
     try:
         zip_bytes = _make_zip({f"f{i}.txt": "x" for i in range(5)})
@@ -233,7 +233,7 @@ def test_archive_job_rejects_oversized_uncompressed(client, admin_headers):
         )
 
 
-# ------------------------------------------------- modèles (admin + public)
+# ------------------------------------------------- models (admin + public)
 
 
 def test_admin_translation_models_seeded(client, admin_headers):
@@ -244,7 +244,7 @@ def test_admin_translation_models_seeded(client, admin_headers):
 
 
 def test_translation_model_download_and_delete(client, admin_headers):
-    # Indépendant des autres tests : repartir d'un modèle non téléchargé.
+    # Independent of other tests: start from a non-downloaded model.
     with Session(engine) as session:
         row = session.exec(
             select(TranslationModel).where(TranslationModel.direction == "fr-en")
@@ -264,7 +264,7 @@ def test_translation_model_download_and_delete(client, admin_headers):
     assert model["status"] == "downloading"
     assert model["download_progress"] == 0
 
-    # Simule la fin du téléchargement côté worker puis suppression.
+    # Simulates the worker finishing the download, then deletion.
     with Session(engine) as session:
         row = session.exec(
             select(TranslationModel).where(TranslationModel.direction == "fr-en")
@@ -347,7 +347,7 @@ def test_settings_rejects_non_positive_limits(client, admin_headers):
     assert response.status_code == 400
 
 
-# --- Annulation ---
+# --- Cancellation ---
 
 
 def test_cancel_pending_translation_job(client, admin_headers):
@@ -362,7 +362,7 @@ def test_cancel_pending_translation_job(client, admin_headers):
     response = client.post(f"/api/translation/jobs/{job_id}/cancel", headers=admin_headers)
     assert response.status_code == 202
 
-    # Une seconde demande reste acceptée (idempotent).
+    # A second request is still accepted (idempotent).
     response = client.post(f"/api/translation/jobs/{job_id}/cancel", headers=admin_headers)
     assert response.status_code == 202
 

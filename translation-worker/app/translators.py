@@ -1,10 +1,10 @@
 """
-Traducteurs de formats de fichiers pour les archives ZIP.
+File-format translators for ZIP archives.
 
-Chaque traducteur prend le contenu d'un fichier et une fonction
-`translate_batch(texts) -> list[str]` (batch, cache géré par l'appelant), et
-retourne le contenu traduit. Les clés JSON et la structure HTML sont
-préservées ; seules les valeurs textuelles sont traduites.
+Each translator takes a file's content and a
+`translate_batch(texts) -> list[str]` function (batching, cache handled
+by the caller) and returns the translated content. JSON keys and HTML
+structure are preserved; only textual values are translated.
 """
 
 import json
@@ -12,9 +12,9 @@ import re
 from html import escape, unescape
 from html.parser import HTMLParser
 
-# Attributs HTML dont la valeur est traduite (comparaison insensible à la casse).
+# HTML attributes whose value is translated (case-insensitive comparison).
 TRANSLATABLE_ATTRS = {"alt", "title", "placeholder", "aria-label"}
-# Régions dont le contenu textuel n'est PAS traduit (verbatim).
+# Regions whose text content is NOT translated (verbatim).
 EXCLUDED_TAGS = {"script", "style", "pre", "code"}
 
 _ENTITY_RE = re.compile(r"&(?:[a-zA-Z][a-zA-Z0-9]*|#\d+|#x[0-9a-fA-F]+);")
@@ -22,9 +22,9 @@ _PLACEHOLDER_RE = re.compile("\ue000(\\d+)\ue001")
 
 
 def _encode_entities(text: str, entities: list) -> str:
-    """Remplace les entités HTML par des jetons en zone d'usage privé
-    (\ue000<idx>\ue001) : le moteur de traduction ne doit ni les voir ni les
-    altérer."""
+    """Replaces HTML entities with private-use-area tokens
+    (\ue000<idx>\ue001) for the duration of the translation, then restores
+    them: the translation engine must neither see nor alter them."""
     def _token(match: re.Match) -> str:
         entities.append(match.group(0))
         return f"\ue000{len(entities) - 1}\ue001"
@@ -62,16 +62,16 @@ def _rebuild(node, it):
     if isinstance(node, list):
         return [_rebuild(item, it) for item in node]
     if isinstance(node, dict):
-        # Les clés sont préservées telles quelles, seules les valeurs changent.
+        # Keys are preserved as-is, only values change.
         return {key: _rebuild(value, it) for key, value in node.items()}
-    return node  # nombres, booléens, null : inchangés
+    return node  # numbers, booleans, null: unchanged
 
 
 def translate_json_content(content: str, translate_batch) -> str:
     """
-    Traduit les valeurs de chaînes d'un contenu JSON (clés préservées,
-    listes/objets parcourus récursivement). Lève json.JSONDecodeError si le
-    contenu n'est pas du JSON valide.
+    Translates the string values of JSON content (keys preserved,
+    lists/objects walked recursively). Raises json.JSONDecodeError if the
+    content is not valid JSON.
     """
     data = json.loads(content)
     strings: list = []
@@ -86,11 +86,11 @@ def translate_json_content(content: str, translate_batch) -> str:
 
 
 class _HTMLEventParser(HTMLParser):
-    """Parse le document UNE fois et produit (a) une liste d'événements
-    décrivant le document, (b) la liste des textes à traduire dans l'ordre.
-    Les événements « texte traduisible » portent le texte avec entités
-    encodées en jetons ; le rendu décodera la traduction avec la même table
-    d'entités (portée par l'instance)."""
+    """Parses the document ONCE and produces (a) a list of events
+    describing the document, (b) the list of texts to translate in order.
+    "translatable text" events carry the text with entities encoded
+    as tokens; rendering decodes the translation with the same entity
+    table (held by the instance)."""
 
     def __init__(self):
         super().__init__(convert_charrefs=False)
@@ -100,14 +100,14 @@ class _HTMLEventParser(HTMLParser):
         self._excluded_depth = 0
         self._buffer: list = []  # fragments ("text"|"ent", valeur)
 
-    # -- construction des événements
+    # -- event building
 
     def _attrs_events(self, attrs) -> list:
         out = []
         for name, value in attrs:
             if self._excluded_depth == 0 and value and name.lower() in TRANSLATABLE_ATTRS:
-                # Les entités sont décodées avant traduction puis ré-échappées
-                # au rendu : le HTML reste sémantiquement équivalent.
+                # Entities are decoded before translation then re-escaped
+                # at render time: the HTML stays semantically equivalent.
                 plain = unescape(value)
                 self.strings.append(plain)
                 out.append((name, True))
@@ -162,7 +162,7 @@ class _HTMLEventParser(HTMLParser):
             self.events.append(("text_tr", encoded))
             self.strings.append(encoded)
         else:
-            # Zones exclues ou blancs/entités seuls : re-émis tels quels.
+            # Excluded zones or whitespace/entities only: re-emitted as-is.
             self.events.append(("text_raw", raw))
         self._buffer = []
 
@@ -207,8 +207,8 @@ def _render_html(events: list, translations, entities: list) -> str:
 
 
 def translate_html_content(content: str, translate_batch) -> str:
-    """Traduit les nœuds texte et attributs configurés d'un contenu HTML,
-    en excluant <script>/<style>/<pre>/<code> (contenus re-émis verbatim)."""
+    """Translates text nodes and configured attributes of HTML content,
+    excluding <script>/<style>/<pre>/<code> (contents re-emitted verbatim)."""
     parser = _HTMLEventParser()
     parser.feed(content)
     parser.close()
@@ -223,12 +223,12 @@ _MD_INLINE_CODE_RE = re.compile(r"(`+)([\s\S]+?)\1")
 _MD_AUTOLINK_RE = re.compile(r"<[A-Za-z][A-Za-z0-9+.\-]*:[^>\s]*>")
 _MD_HTML_COMMENT_RE = re.compile(r"<!--[\s\S]*?-->")
 _MD_HTML_TAG_RE = re.compile(r"</?[A-Za-z][^<>]*>")
-# Liens/images : [label](dest "titre") — tout le contenu des parenthèses
-# (chemin, titre) est préservé tel quel, seul le libellé est traduit.
+# Links/images: [label](dest "title") — everything inside the parentheses
+# (path, title) is preserved as-is, only the label is translated.
 _MD_LINK_RE = re.compile(r"(!?)\[((?:[^\[\]\\]|\\.)*)\]\(([^()]*)\)")
 
-# Étendre le gras/emphasis/barré. « _ » exige des frontières de mot pour ne
-# pas casser le snake_case.
+# Bold/emphasis/strike expansion. "_" requires word boundaries so that
+# snake_case is not broken.
 _MD_DELIMS = [
     ("**", re.compile(r"\*\*(?=\S)([\s\S]+?)(?<=\S)\*\*")),
     ("__", re.compile(r"(?<![\w\\])__(?=\S)([\s\S]+?)(?<=\S)__(?!\w)")),
@@ -241,15 +241,15 @@ _MD_FENCE_RE = re.compile(r"^(\s{0,3})(`{3,}|~{3,})(.*)$")
 _MD_HEADING_RE = re.compile(r"^(\s{0,3}#{1,6}\s+)(.*)$")
 _MD_QUOTE_RE = re.compile(r"^(\s*>+\s?)(.*)$")
 _MD_LIST_RE = re.compile(r"^(\s*(?:[-+*]|\d{1,9}[.)])\s+)(.*)$")
-# Lignes décoratives : séparateurs horizontaux, soulignements setext.
+# Decorative lines: horizontal rules, setext underlines.
 _MD_DECORATION_RE = re.compile(r"^\s*[=\-_*][=\-_*\s]*$")
 
 
 def _md_tokenize_inline(text: str) -> list:
-    """Découpe un fragment de ligne en éléments :
+    """Splits a line fragment into elements:
     ("raw", s) syntaxe préservée verbatim, ("text", s) à traduire,
     ("delim", marqueur, éléments) gras/emphasis/barré,
-    ("link", bang, éléments_libellé, parenthèses) lien ou image."""
+    ("link", bang, label_elements, parens) link or image."""
     elements = []
     buf = []
 
@@ -295,8 +295,8 @@ def _md_tokenize_inline(text: str) -> list:
 
 
 def _md_is_translatable(text: str) -> bool:
-    """Un fragment sans aucune lettre ni chiffre (ponctuation seule) n'est pas
-    envoyé au modèle : il serait réécrit/halluciné sans rien apporter."""
+    """A fragment without any letter or digit (punctuation only) is not
+    sent to the model: it would be rewritten/hallucined for no benefit."""
     return re.search(r"\w", text, re.UNICODE) is not None
 
 
@@ -334,8 +334,8 @@ def _md_render_inline(elements: list, translations) -> str:
 
 
 def _md_line_element(line_body: str):
-    """Élément pour le contenu d'une ligne (sans le saut de ligne) :
-    préfixes de titre/citation/liste préservés, espaces de début/fin conservés."""
+    """Element for a line's content (without the line break): heading/
+    quote/list prefixes preserved, leading/trailing spaces kept."""
     match = _MD_HEADING_RE.match(line_body) or _MD_QUOTE_RE.match(line_body) or _MD_LIST_RE.match(line_body)
     if match:
         prefix, rest = match.group(1), match.group(2)
@@ -367,8 +367,8 @@ def _md_render_line(element, translations) -> str:
     return prefix + body + trailing
 
 
-# Ligne de séparation d'un tableau GFM : uniquement | : - et espaces, avec
-# au moins un tiret (ex. | --- | :---: | ---: |).
+# GFM table delimiter row: only | : - and spaces, with at least one
+# dash (e.g. | --- | :---: | ---: |).
 _MD_TABLE_DELIM_RE = re.compile(r"^[\s|:-]+$")
 _MD_UNESCAPED_PIPE_RE = re.compile(r"(?<!\\)\|")
 
@@ -384,8 +384,8 @@ def _md_is_table_delimiter(line: str) -> bool:
 
 
 def _md_cell_element(piece: str):
-    """Cellule de tableau : espaces de début/fin conservés, contenu inline
-    traduit (gras, liens, etc. fonctionnent dans les cellules)."""
+    """Table cell: leading/trailing spaces kept, inline content translated
+    (bold, links, etc. work inside cells)."""
     core = piece.strip()
     leading = piece[: len(piece) - len(piece.lstrip())]
     trailing = piece[len(piece.rstrip()):]
@@ -393,9 +393,9 @@ def _md_cell_element(piece: str):
 
 
 def _md_split_row(line: str) -> list:
-    """Découpe une ligne de tableau sur les pipes non échappés ; les segments
-    vides de bord (autour des pipes d'ouverture/fermeture) restent verbatim,
-    les autres sont des cellules à traduire."""
+    """Splits a table row on unescaped pipes; empty border segments (around
+    the opening/closing pipes) stay verbatim, the others are cells to
+    translate."""
     pieces = _MD_UNESCAPED_PIPE_RE.split(line)
     parts = []
     for index, piece in enumerate(pieces):
@@ -422,18 +422,17 @@ def _md_render_row(parts: list, translations) -> str:
 
 def translate_markdown_content(content: str, translate_batch) -> str:
     """
-    Traduit un document Markdown en préservant intégralement la syntaxe :
-    titres, gras, italique, barré, code et blocs de code, citations, listes,
-    tableaux (format et alignements conservés, contenu des cellules traduit),
-    liens et images (seuls les libellés/alt sont traduits, jamais les chemins),
-    caractères échappés et front matter. Seuls les textes visibles sont
-    traduits.
+    Translates a Markdown document while fully preserving the syntax:
+    headings, bold, italic, strike, code and code blocks, quotes, lists,
+    tables (format and alignments kept, cell content translated), links and
+    images (only labels/alt text are translated, never paths), escaped
+    characters and front matter. Only visible text is translated.
     """
     lines = content.splitlines(keepends=True)
-    elements = []  # ("raw_line", texte) | ("nested", élément) | ("table", parties)
+    elements = []  # ("raw_line", text) | ("nested", element) | ("table", parts)
     strings: list = []
 
-    fence = None  # (marqueur, longueur) du bloc de code en cours
+    fence = None  # (marker, length) of the current code block
     in_front_matter = bool(lines) and lines[0].rstrip("\r\n") == "---"
 
     index = 0
@@ -467,7 +466,7 @@ def translate_markdown_content(content: str, translate_batch) -> str:
             index += 1
             continue
 
-        # Tableau GFM : ligne avec pipe suivie d'une ligne de séparation.
+        # GFM table: a pipe line followed by a delimiter row.
         if "|" in line and index + 1 < len(lines) and _md_is_table_delimiter(
             lines[index + 1].rstrip("\r\n")
         ):
@@ -475,10 +474,10 @@ def translate_markdown_content(content: str, translate_batch) -> str:
             elements.append(("table", header_parts, newline))
             _md_collect_row(header_parts, strings)
             index += 1
-            # Ligne de séparation (alignements) : verbatim.
+            # Delimiter row (alignments): verbatim.
             elements.append(("raw_line", lines[index]))
             index += 1
-            # Lignes du corps : tant qu'elles contiennent un pipe.
+            # Body rows: as long as they contain a pipe.
             while index < len(lines):
                 body_line = lines[index].rstrip("\r\n")
                 if not body_line.strip() or "|" not in body_line:

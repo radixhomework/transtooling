@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import * as settingsApi from "../api/appSettings";
 import "./AdminSettingsPage.css";
 
 export default function AdminSettingsPage() {
+  const { t } = useTranslation();
   const [maxFileSizeMb, setMaxFileSizeMb] = useState("");
   const [maxDurationMin, setMaxDurationMin] = useState("");
   const [maxTextLengthChars, setMaxTextLengthChars] = useState("");
@@ -29,8 +31,9 @@ export default function AdminSettingsPage() {
         setMaxArchiveUncompressedMb(String(data.max_archive_uncompressed_mb));
         setTranslatableExtensions(data.translatable_extensions);
       })
-      .catch(() => setError("Impossible de charger les paramètres."))
+      .catch(() => setError(t("adminSettings.errorLoad")))
       .finally(() => setIsLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleSubmit(e) {
@@ -51,10 +54,7 @@ export default function AdminSettingsPage() {
       });
       setSuccess(true);
     } catch {
-      setError(
-        "Impossible d'enregistrer les paramètres. Vérifiez que les valeurs sont positives " +
-          "et qu'au moins une extension traduisible est définie."
-      );
+      setError(t("adminSettings.errorSave"));
     } finally {
       setIsSaving(false);
     }
@@ -64,21 +64,18 @@ export default function AdminSettingsPage() {
     <div className="admin-settings-page">
       <div className="admin-page-header">
         <div>
-          <h1>Paramètres</h1>
-          <p>
-            Taille et durée maximales des fichiers audio, et limites de la traduction
-            (texte et archives ZIP).
-          </p>
+          <h1>{t("adminSettings.title")}</h1>
+          <p>{t("adminSettings.subtitle")}</p>
         </div>
       </div>
 
       {isLoading ? (
-        <p>Chargement…</p>
+        <p>{t("common.loading")}</p>
       ) : (
         <form onSubmit={handleSubmit} className="card settings-form">
-          <h2 className="settings-section-title">Upload audio</h2>
+          <h2 className="settings-section-title">{t("adminSettings.audioSection")}</h2>
           <div className="field">
-            <label htmlFor="max-size">Taille maximale d'un fichier audio (Mo)</label>
+            <label htmlFor="max-size">{t("adminSettings.maxFileSize")}</label>
             <input
               id="max-size"
               type="number"
@@ -90,7 +87,7 @@ export default function AdminSettingsPage() {
             />
           </div>
           <div className="field">
-            <label htmlFor="max-duration">Durée maximale d'un fichier audio (minutes)</label>
+            <label htmlFor="max-duration">{t("adminSettings.maxDuration")}</label>
             <input
               id="max-duration"
               type="number"
@@ -102,9 +99,9 @@ export default function AdminSettingsPage() {
             />
           </div>
 
-          <h2 className="settings-section-title">Traduction — texte</h2>
+          <h2 className="settings-section-title">{t("adminSettings.textSection")}</h2>
           <div className="field">
-            <label htmlFor="max-text-chars">Longueur maximale du texte (caractères)</label>
+            <label htmlFor="max-text-chars">{t("adminSettings.maxTextLength")}</label>
             <input
               id="max-text-chars"
               type="number"
@@ -116,7 +113,7 @@ export default function AdminSettingsPage() {
             />
           </div>
           <div className="field">
-            <label htmlFor="preview-chars">Aperçu tronqué au-delà de (caractères)</label>
+            <label htmlFor="preview-chars">{t("adminSettings.previewChars")}</label>
             <input
               id="preview-chars"
               type="number"
@@ -128,9 +125,9 @@ export default function AdminSettingsPage() {
             />
           </div>
 
-          <h2 className="settings-section-title">Traduction — archives ZIP</h2>
+          <h2 className="settings-section-title">{t("adminSettings.archiveSection")}</h2>
           <div className="field">
-            <label htmlFor="max-archive-size">Taille maximale de l'archive (Mo)</label>
+            <label htmlFor="max-archive-size">{t("adminSettings.maxArchiveSize")}</label>
             <input
               id="max-archive-size"
               type="number"
@@ -142,7 +139,7 @@ export default function AdminSettingsPage() {
             />
           </div>
           <div className="field">
-            <label htmlFor="max-archive-files">Nombre maximal de fichiers</label>
+            <label htmlFor="max-archive-files">{t("adminSettings.maxArchiveFiles")}</label>
             <input
               id="max-archive-files"
               type="number"
@@ -154,7 +151,9 @@ export default function AdminSettingsPage() {
             />
           </div>
           <div className="field">
-            <label htmlFor="max-archive-uncompressed">Taille décompressée maximale (Mo)</label>
+            <label htmlFor="max-archive-uncompressed">
+              {t("adminSettings.maxArchiveUncompressed")}
+            </label>
             <input
               id="max-archive-uncompressed"
               type="number"
@@ -166,7 +165,7 @@ export default function AdminSettingsPage() {
             />
           </div>
           <div className="field">
-            <label htmlFor="translatable-extensions">Extensions traduisibles (séparées par des virgules)</label>
+            <label htmlFor="translatable-extensions">{t("adminSettings.extensions")}</label>
             <input
               id="translatable-extensions"
               type="text"
@@ -174,18 +173,14 @@ export default function AdminSettingsPage() {
               value={translatableExtensions}
               onChange={(e) => setTranslatableExtensions(e.target.value)}
             />
-            <p className="settings-field-hint">
-              Les fichiers avec ces extensions sont traduits (JSON : valeurs de chaînes, clés
-              préservées ; HTML : textes et attributs ; Markdown : syntaxe et chemins
-              préservés). Les autres fichiers sont copiés tels quels.
-            </p>
+            <p className="settings-field-hint">{t("adminSettings.extensionsHint")}</p>
           </div>
 
           {error && <p className="error-text">{error}</p>}
-          {success && <p className="success-text">Paramètres enregistrés.</p>}
+          {success && <p className="success-text">{t("adminSettings.success")}</p>}
 
           <button type="submit" className="btn btn-primary" disabled={isSaving}>
-            {isSaving ? "Enregistrement..." : "Enregistrer"}
+            {isSaving ? t("common.saving") : t("common.save")}
           </button>
         </form>
       )}

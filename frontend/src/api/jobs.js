@@ -31,7 +31,7 @@ export function cancelJob(jobId) {
 }
 
 export function downloadJobUrl(jobId, format = "vtt") {
-  // Le token étant requis, on télécharge via blob plutôt qu'un lien direct.
+  // A token is required, so we download through a blob rather than a direct link.
   return apiClient
     .get(`/jobs/${jobId}/download`, { params: { format }, responseType: "blob" })
     .then((r) => r.data);

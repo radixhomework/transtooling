@@ -1,29 +1,29 @@
 """
-Post-traitement du texte issu de faster-whisper.
+Post-processing of faster-whisper output text.
 
-faster-whisper produit déjà une ponctuation de base correcte pour le français
-(via son modèle), mais le texte brut segmenté peut contenir :
-- des espaces superflus ou doublés
-- des espaces avant la ponctuation (héritage de la tokenisation)
-- une absence de majuscule en début de segment
-- une absence de point final sur le dernier segment
+faster-whisper already produces decent base punctuation for French (through
+its model), but the raw segmented text can contain:
+- extra or doubled spaces
+- spaces before punctuation (a tokenization leftover)
+- a missing capital at the start of a segment
+- a missing final period on the last segment
 
-Ce module effectue un nettoyage léger, non intrusif : il ne réécrit pas le
-contenu (aucune reformulation), il normalise uniquement la forme.
+This module performs light, non-intrusive cleanup: it does not rewrite
+content (no rephrasing), it only normalizes form.
 """
 
 import re
 
 
 def clean_segment_text(text: str) -> str:
-    """Nettoie le texte d'un segment individuel (espaces, ponctuation)."""
+    """Cleans an individual segment's text (spaces, punctuation)."""
     text = text.strip()
-    # Supprime les espaces multiples
+    # Removes multiple spaces
     text = re.sub(r"\s+", " ", text)
-    # Supprime les espaces avant une ponctuation simple (. , ! ?)
-    # NB : le français utilise une espace insécable avant : ; ! ? mais on
-    # reste ici sur une espace normale pour rester cohérent avec un affichage
-    # web basique ; ajuster si une typographie française stricte est requise.
+    # Removes spaces before simple punctuation (. , ! ?)
+    # NB: French uses a non-breaking space before : ; ! ? but we keep a
+    # regular space here to stay consistent with basic web display;
+    # adjust if strict French typography is required.
     text = re.sub(r"\s+([.,!?])", r"\1", text)
     return text
 
@@ -43,7 +43,7 @@ def ensure_terminal_punctuation(text: str) -> str:
 
 
 def postprocess_segment_text(text: str) -> str:
-    """Applique l'ensemble des règles de nettoyage à un segment."""
+    """Applies the full set of cleanup rules to a segment."""
     text = clean_segment_text(text)
     text = capitalize_first_letter(text)
     return text
@@ -51,9 +51,9 @@ def postprocess_segment_text(text: str) -> str:
 
 def postprocess_full_transcript(segments_text: list[str]) -> str:
     """
-    Assemble les segments nettoyés en un texte continu, avec ponctuation
-    finale garantie sur le dernier segment. Utilisé pour un éventuel export
-    texte brut en plus du .vtt (segments conservés séparément dans le VTT).
+    Assembles the cleaned segments into continuous text, with terminal
+    punctuation guaranteed on the last segment. Used for a possible plain
+    text export in addition to the .vtt (segments kept separate in VTT).
     """
     cleaned = [postprocess_segment_text(t) for t in segments_text if t.strip()]
     if cleaned:

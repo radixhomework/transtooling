@@ -49,7 +49,7 @@ class ChangePasswordRequest(BaseModel):
         return _validate_password_strength(v)
 
 
-# --- Utilisateurs ---
+# --- Users ---
 
 class UserCreateRequest(BaseModel):
     login: str = Field(min_length=3, max_length=64, pattern=r"^[a-zA-Z0-9_.\-]+$")
@@ -108,7 +108,7 @@ class JobResponse(BaseModel):
         from_attributes = True
 
 
-# --- Modèles Whisper ---
+# --- Whisper models ---
 
 class WhisperModelResponse(BaseModel):
     id: int
@@ -131,7 +131,7 @@ class WhisperModelUpdateRequest(BaseModel):
 
 
 class EnabledModelResponse(BaseModel):
-    """Modèle proposé aux utilisateurs (sélecteur d'upload) : téléchargé et activé."""
+    """Model offered to users (upload selector): downloaded and enabled."""
 
     name: str
     is_default: bool
@@ -140,7 +140,7 @@ class EnabledModelResponse(BaseModel):
         from_attributes = True
 
 
-# --- Paramètres applicatifs ---
+# --- Application settings ---
 
 class AppSettingsResponse(BaseModel):
     max_file_size_mb: int
@@ -164,7 +164,7 @@ class AppSettingsUpdateRequest(BaseModel):
     translatable_extensions: Optional[str] = None
 
 
-# --- Traduction ---
+# --- Translation ---
 
 class TranslationJobCreateRequest(BaseModel):
     direction: str  # "fr-en" | "en-fr"

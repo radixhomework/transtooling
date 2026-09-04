@@ -2,22 +2,22 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    """Configuration chargée depuis les variables d'environnement (.env)."""
+    """Configuration loaded from environment variables (.env)."""
 
-    # Admin par défaut (utilisé uniquement à la création initiale du compte)
+    # Default admin (only used for the initial account creation)
     admin_login: str = "admin"
-    # Héritage : anciennes instances utilisant ADMIN_EMAIL (le compte admin
-    # préexistant garde son identifiant d'origine après la migration).
+    # Legacy: older instances relying on ADMIN_EMAIL (an existing admin
+    # account keeps its original login after the migration).
     admin_email: str = ""
     admin_password: str = "changeme"
 
-    # Sécurité / JWT
+    # Security / JWT
     jwt_secret: str = "change_this_secret_before_deploying"
     jwt_algorithm: str = "HS256"
     jwt_expiration_minutes: int = 60
     jwt_refresh_expiration_days: int = 7
 
-    # Limites par défaut (valeurs de départ, ensuite modifiables en base via /admin/settings)
+    # Default limits (starting values, then editable in DB via /admin/settings)
     default_max_file_size_mb: int = 200
     default_max_duration_min: int = 60
 
@@ -27,12 +27,12 @@ class Settings(BaseSettings):
     whisper_models_path: str = "/models"
     whisper_compute_type: str = "int8"
 
-    # Stockage
+    # Storage
     sqlite_path: str = "/data/app.db"
     audio_tmp_path: str = "/audio_tmp"
     transcripts_path: str = "/transcripts"
 
-    # Traduction (archives uploadées / résultats produits)
+    # Translation (uploaded archives / produced results)
     translation_tmp_path: str = "/translation_tmp"
     translations_path: str = "/translations"
 
