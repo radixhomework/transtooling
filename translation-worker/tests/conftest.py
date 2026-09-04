@@ -20,7 +20,7 @@ from app.models import AppSettings, TranslationJob  # noqa: E402
 
 @pytest.fixture(autouse=True)
 def _fresh_database():
-    """Recrée les tables avant chaque test pour repartir d'un état propre."""
+    """Recreates the tables before each test for a clean state."""
     SQLModel.metadata.drop_all(worker_main.engine_db)
     SQLModel.metadata.create_all(worker_main.engine_db)
     with Session(worker_main.engine_db) as session:
@@ -43,7 +43,7 @@ def db_session():
 
 
 class FakeEngine:
-    """Moteur de traduction factice : préfixe chaque texte traduit."""
+    """Fake translation engine: prefixes every translated text."""
 
     def __init__(self):
         self.calls: list = []
@@ -73,7 +73,7 @@ def make_text_job(job_id=1, direction="fr-en", text="Bonjour le monde.", **kwarg
 
 
 def make_zip_file(files: dict, path: str) -> str:
-    """Crée une archive ZIP de test ({nom: contenu}) et retourne son chemin."""
+    """Creates a test ZIP archive ({name: content}) and returns its path."""
     import zipfile
 
     with zipfile.ZipFile(path, "w") as zf:

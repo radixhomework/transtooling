@@ -1,5 +1,5 @@
-/* Polices embarquées (sous-ensembles latin et latin-ext) — aucune
-   requête vers fonts.googleapis.com : chargées localement. */
+/* Embedded fonts (latin and latin-ext subsets) — no
+   request to fonts.googleapis.com: loaded locally. */
 
 @font-face {
   font-family: 'Cormorant Garamond';

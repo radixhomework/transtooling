@@ -20,8 +20,7 @@ def test_admin_can_update_max_file_size(client, admin_headers):
     assert response.status_code == 200
     assert response.json()["max_file_size_mb"] == 150
 
-    # Restaurer une valeur par défaut raisonnable pour ne pas affecter
-    # d'autres tests exécutés après celui-ci.
+    # Restore a sensible default so later tests are not affected.
     client.patch(
         "/api/admin/settings",
         json={"max_file_size_mb": 200},

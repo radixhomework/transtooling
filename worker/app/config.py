@@ -8,8 +8,8 @@ class Settings(BaseSettings):
     whisper_models_path: str = "/models"
     whisper_compute_type: str = "int8"
 
-    # Intervalle de polling de la base pour détecter de nouveaux jobs /
-    # demandes de téléchargement de modèle (en secondes).
+    # Database polling interval to detect new jobs / model download
+    # requests (in seconds).
     poll_interval_seconds: int = 5
 
     class Config:

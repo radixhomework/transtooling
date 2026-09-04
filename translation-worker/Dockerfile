@@ -6,13 +6,13 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
-# Les tests (dossier tests/, pytest.ini, requirements-dev.txt) restent hors
-# de l'image de production ; ils sont exécutés en dehors du build.
+# Tests (tests/ folder, pytest.ini, requirements-dev.txt) stay out of the
+# production image; they are run outside the build.
 
-# Volumes attendus au runtime (montés via docker-compose) :
-#   /data               -> base SQLite (partagée avec le backend)
-#   /translation_models -> modèles OPUS-MT CTranslate2 téléchargés à la demande
-#   /translation_tmp    -> archives uploadées (supprimées après traitement)
-#   /translations       -> archives traduites générées
+# Volumes expected at runtime (mounted via docker-compose):
+#   /data               -> SQLite database (shared with the backend)
+#   /translation_models -> CTranslate2 translation models downloaded on demand
+#   /translation_tmp    -> uploaded archives (deleted after processing)
+#   /translations       -> generated translated archives
 
 CMD ["python", "-m", "app.main"]

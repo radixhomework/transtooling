@@ -15,9 +15,9 @@ from app.models import (
     TranslationModelStatus,
 )
 
-# NOTE : ne pas importer depuis tests/conftest.py — cela réexécuterait le
-# module (nouveau tmpdir, variables d'environnement écrasées après
-# l'import initial de app.main avec les anciens chemins).
+# NOTE: do not import from tests/conftest.py — it would re-execute the
+# module (new tmpdir, environment variables overwritten after
+# the initial import of app.main with the old paths).
 
 
 def make_text_job(job_id=1, direction="fr-en", text="Bonjour le monde.", status="pending"):
@@ -43,14 +43,14 @@ def make_archive_job(job_id, zip_path):
 
 
 def make_zip_file(files: dict, path: str) -> str:
-    """Crée une archive ZIP de test ({nom: contenu}) et retourne son chemin."""
+    """Creates a test ZIP archive ({name: content}) and returns its path."""
     with zipfile.ZipFile(path, "w") as zf:
         for name, content in files.items():
             zf.writestr(name, content)
     return path
 
 
-# --- Cache de traduction ---
+# --- Translation cache ---
 
 
 def test_cache_hit_avoids_recomputation(db_session, fake_engine):
@@ -58,7 +58,7 @@ def test_cache_hit_avoids_recomputation(db_session, fake_engine):
     call_count = len(fake_engine.calls)
     assert call_count == 1
 
-    # Deuxième appel : hit complet, aucun nouveau calcul ni écriture.
+    # Second call: full hit, no new computation or write.
     db_session.expire_all()
     result = worker_main.translate_texts(db_session, "fr-en", ["Bonjour"])
     assert result == ["[TR]Bonjour"]
@@ -69,7 +69,7 @@ def test_cache_hit_avoids_recomputation(db_session, fake_engine):
 
 def test_cache_write_only_on_miss(db_session, fake_engine):
     worker_main.translate_texts(db_session, "fr-en", ["A", "B", "A"])
-    # Dédupliqué : l'engine ne voit que A et B une fois chacun.
+    # Deduplicated: the engine only sees A and B once each.
     assert fake_engine.calls == [["A", "B"]]
     rows = db_session.exec(select(TranslationCache)).all()
     assert len(rows) == 2
@@ -78,13 +78,13 @@ def test_cache_write_only_on_miss(db_session, fake_engine):
 def test_cache_keyed_per_direction(db_session, fake_engine):
     worker_main.translate_texts(db_session, "fr-en", ["Bonjour"])
     worker_main.translate_texts(db_session, "en-fr", ["Bonjour"])
-    # Même texte, directions différentes : deux entrées, deux calculs.
+    # Same text, different directions: two rows, two computations.
     rows = db_session.exec(select(TranslationCache)).all()
     assert len(rows) == 2
     assert fake_engine.calls == [["Bonjour"], ["Bonjour"]]
 
 
-# --- Jobs mode texte ---
+# --- Text-mode jobs ---
 
 
 def test_text_job_success(db_session, fake_engine):
@@ -113,7 +113,7 @@ def test_text_job_missing_source_marked_error(db_session, fake_engine):
     assert job.status == TranslationJobStatus.error
 
 
-# --- Jobs mode archive ---
+# --- Archive-mode jobs ---
 
 
 def _make_archive_job(db_session, job_id, zip_path):
@@ -141,8 +141,8 @@ def test_archive_job_translates_and_copies(db_session, fake_engine):
     assert job.status == TranslationJobStatus.done
     assert job.result_zip_path and os.path.exists(job.result_zip_path)
     report = json.loads(job.report_json)
-    # data.json, page.html, readme.md traduits ; logo.png, readme.txt copiés
-    # (le dossier vide est préservé mais ne compte pas comme fichier).
+    # data.json, page.html, readme.md translated; logo.png, readme.txt copied
+    # (the empty directory is preserved but does not count as a file).
     assert report["total_files"] == 5
     assert report["translated"] == 3
     assert report["copied"] == 2
@@ -155,7 +155,7 @@ def test_archive_job_translates_and_copies(db_session, fake_engine):
         assert "docs/readme.md" in names
         assert "assets/logo.png" in names
         assert "docs/readme.txt" in names
-        assert "empty/" in names  # arborescence conservée
+        assert "empty/" in names  # tree structure preserved
         data = json.loads(zf.read("data.json"))
         assert data["greeting"] == "[TR]Hello"
         assert data["nested"]["label"] == "[TR]World"
@@ -163,7 +163,7 @@ def test_archive_job_translates_and_copies(db_session, fake_engine):
         assert "not translated" in zf.read("docs/readme.txt").decode()
         assert "[TR]Hello html" in zf.read("page.html").decode()
 
-    # Nettoyage : archive source supprimée, champ vidé.
+    # Cleanup: source archive deleted, field cleared.
     assert not os.path.exists(zip_path)
     assert job.archive_tmp_filename is None
 
@@ -180,7 +180,7 @@ def test_archive_job_per_file_error_best_effort(db_session, fake_engine):
     worker_main.process_pending_job(db_session)
     db_session.refresh(job)
 
-    # Le job réussit globalement : erreur par fichier → copie telle quelle.
+    # The job succeeds overall: per-file error -> copied as-is.
     assert job.status == TranslationJobStatus.done
     report = json.loads(job.report_json)
     assert report["translated"] == 2
@@ -224,7 +224,7 @@ def test_archive_extraction_zip_slip_rejected(db_session, fake_engine):
     zip_path = os.path.join(os.environ["TRANSLATION_TMP_PATH"], "a4.zip")
     with zipfile.ZipFile(zip_path, "w") as zf:
         zf.writestr("normal.txt", "ok")
-        # Chemin relatif remontant hors du répertoire d'extraction.
+        # Relative path escaping the extraction directory.
         zf.writestr("../../evil.txt", "boom")
 
     job = _make_archive_job(db_session, 14, zip_path)
@@ -238,7 +238,7 @@ def test_archive_extraction_zip_slip_rejected(db_session, fake_engine):
     )
 
 
-# --- Reprise après crash ---
+# --- Crash recovery ---
 
 
 def test_recover_stale_text_job_requeued(db_session):
@@ -280,7 +280,7 @@ def test_recover_stale_job_without_source_marked_error(db_session):
     assert job.status == TranslationJobStatus.error
 
 
-# --- Téléchargement des modèles ---
+# --- Model downloads ---
 
 
 def test_model_download_success(db_session, monkeypatch):
@@ -317,7 +317,7 @@ def test_model_download_success(db_session, monkeypatch):
 
     assert model.status == TranslationModelStatus.downloaded
     assert model.download_progress == 100
-    assert model.disk_size_mb == 2  # symlinks non comptés double
+    assert model.disk_size_mb == 2  # symlinks not counted twice
     assert calls[0]["repo_id"] == "JustFrederik/nllb-200-distilled-600M-ct2-int8"
 
 
@@ -341,7 +341,7 @@ def test_model_download_error(db_session, monkeypatch):
     assert "Réseau indisponible" in model.error_message
 
 
-# --- Annulation ---
+# --- Cancellation ---
 
 
 def test_text_job_cancelled_before_processing(db_session, fake_engine):
@@ -356,7 +356,7 @@ def test_text_job_cancelled_before_processing(db_session, fake_engine):
     assert job.result_text is None
     assert job.error_message is None
     assert job.finished_at is not None
-    # Aucune traduction n'a été lancée.
+    # No translation was started.
     assert fake_engine.calls == []
 
 
@@ -372,4 +372,4 @@ def test_archive_job_cancelled_keeps_report_empty(db_session, fake_engine):
     worker_main.process_pending_job(db_session)
     db_session.refresh(job)
     assert job.status == TranslationJobStatus.cancelled
-    assert not os.path.exists(zip_path)  # archive source nettoyée
+    assert not os.path.exists(zip_path)  # source archive cleaned up

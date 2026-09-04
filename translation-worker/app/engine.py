@@ -1,11 +1,11 @@
 """
-Moteur de traduction : modèle NLLB-200-distilled-600M converti au format
-CTranslate2 (int8), tokenisé par SentencePiece.
+Translation engine: NLLB-200-distilled-600M converted to the CTranslate2
+format (int8), tokenized with SentencePiece.
 
-NLLB est un modèle multilingue : une seule paire de poids sert toutes les
-directions, la langue source/cible étant portée par des jetons de code
-(fra_Latn, eng_Latn...). Il remplace les petits modèles OPUS-MT bilingues
-(2018) dont les traductions étaient trop littérales sur les idiomes.
+NLLB is a multilingual model: a single set of weights serves all
+directions, the source/target language being carried by code tokens
+(fra_Latn, eng_Latn...). It replaces the small bilingual OPUS-MT models
+(2018) whose translations were too literal on idioms.
 """
 
 import logging
@@ -16,23 +16,23 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Modèle unique partagé par toutes les directions (multilingue).
+# Single model shared by all directions (multilingual).
 NLLB_REPO = "JustFrederik/nllb-200-distilled-600M-ct2-int8"
 
-# Un dépôt par direction (même modèle sous-jacent) : le cache HuggingFace
-# étant partagé, le téléchargement d'une seconde direction est immédiat.
+# One repo per direction (same underlying model): since the HuggingFace
+# cache is shared, downloading a second direction is instantaneous.
 DIRECTION_REPOS = {
     "fr-en": NLLB_REPO,
     "en-fr": NLLB_REPO,
 }
 
-# Jetons de langue NLLB par direction.
+# NLLB language tokens per direction.
 LANGUAGE_CODES = {
     "fr-en": ("fra_Latn", "eng_Latn"),
     "en-fr": ("eng_Latn", "fra_Latn"),
 }
 
-# Fichiers nécessaires : poids CT2 + vocabulaire CT2 + tokenizer SentencePiece.
+# Required files: CT2 weights + CT2 vocabulary + SentencePiece tokenizer.
 ALLOW_PATTERNS = [
     "model.bin",
     "config.json",
@@ -40,21 +40,21 @@ ALLOW_PATTERNS = [
     "sentencepiece.bpe.model",
 ]
 
-# Les modèles de traduction sont limités en positions source (512 pour les
-# OPUS-MT, 1024 pour NLLB) : on découpe les textes longs en morceaux d'au
-# plus max_source_tokens jetons, aux frontières de phrases.
+# Translation models are limited in source positions (512 for OPUS-MT,
+# 1024 for NLLB): long texts are split into chunks of at most
+# max_source_tokens tokens, at sentence boundaries.
 DEFAULT_MAX_SOURCE_TOKENS = 500
 
-# Un morceau de texte de moins de ~1200 caractères fait moins de 500 jetons
-# dans la quasi-totalité des cas : ce seuil évite de tokeniser des textes
-# entiers juste pour mesurer leur longueur (lent, et source d'avertissements
-# « sequence length is longer than the specified maximum »).
+# A text chunk under ~1200 characters is under 500 tokens in almost all
+# cases: this threshold avoids tokenizing whole texts just to measure
+# their length (slow, and the source of "sequence length is longer than
+# the specified maximum" warnings).
 _SOFT_CHAR_LIMIT = 1200
 
-# Échelle de séparateurs pour découper sans couper les phrases au hasard :
-# d'abord les phrases, puis les propositions, puis les énumérations, puis
-# les mots. La coupure en jetons (dans un mot) n'intervient qu'en dernier
-# recours pathologique (un « mot » de plus de _SOFT_CHAR_LIMIT caractères).
+# Separator ladder to split without cutting sentences at random: first
+# sentences, then clauses, then enumerations, then words. Token-level
+# splitting (inside a word) only happens as a last pathological resort
+# (a single "word" longer than _SOFT_CHAR_LIMIT characters).
 _BOUNDARY_LEVELS = [
     re.compile(r"(?<=[.!?…])\s+"),
     re.compile(r"(?<=[;:])\s+"),
@@ -64,11 +64,11 @@ _BOUNDARY_LEVELS = [
 
 
 class JobCancelled(Exception):
-    """Levée quand une annulation est demandée en cours de traduction."""
+    """Raised when cancellation is requested during translation."""
 
 
 class TranslationEngine:
-    """Enveloppe CTranslate2 + SentencePiece pour une direction donnée."""
+    """CTranslate2 + SentencePiece wrapper for a given direction."""
 
     def __init__(self, direction: str, model_path: str, compute_type: str = None,
                  max_batch_size: int = None):
@@ -86,7 +86,7 @@ class TranslationEngine:
         self.max_batch_size = max_batch_size or settings.translation_batch_size
         self.max_source_tokens = DEFAULT_MAX_SOURCE_TOKENS
 
-    # -- tokenisation (points d'entrée étroits, facilement simulables en test)
+    # -- tokenization (narrow entry points, easy to stub in tests)
 
     def _tokenize(self, text: str) -> list:
         return self._sp.encode(text, out_type=str)
@@ -101,15 +101,15 @@ class TranslationEngine:
 
     def translate(self, texts: list, should_continue=None) -> list:
         """
-        Traduit une liste de textes en préservant la mise en page (sauts de
-        ligne, espaces en début/fin de ligne). `should_continue` est consulté
-        entre chaque lot de phrases et lève JobCancelled si l'annulation du
-        job a été demandée entre-temps.
+        Translates a list of texts while preserving layout (line breaks,
+        leading/trailing spaces on a line). `should_continue` is consulted
+        between each sentence batch and raises JobCancelled if the job
+        cancellation was requested in the meantime.
         """
-        # 1. Découpe par lignes puis par phrases : les blocs de texte sont
-        #    traduits, les séparateurs (\n+) et espaces réinsérés tels quels.
+        # 1. Split by lines then sentences: text blocks are translated,
+        #    separators (\n+) and spaces are reinserted verbatim.
         structures = []
-        all_chunks = []  # tous les morceaux (phrases), à plat
+        all_chunks = []  # all chunks (sentences), flattened
         for text in texts:
             structure = []
             for part in re.split(r"(\n+)", text):
@@ -126,8 +126,8 @@ class TranslationEngine:
                 all_chunks.extend(chunks)
             structures.append(structure)
 
-        # 2. Traduction de tous les morceaux par lots de max_batch_size
-        #    phrases (granularité fine : une annulation est vue rapidement).
+        # 2. Translate all chunks in batches of max_batch_size sentences
+        #    (fine granularity: a cancellation is detected quickly).
         translated_chunks = []
         for start in range(0, len(all_chunks), self.max_batch_size):
             if should_continue is not None and start > 0:
@@ -136,8 +136,8 @@ class TranslationEngine:
                 self._translate_chunks(all_chunks[start : start + self.max_batch_size])
             )
 
-        # 3. Réassemblage : morceaux -> blocs -> textes, avec la mise en page
-        #    d'origine.
+        # 3. Reassembly: chunks -> blocks -> texts, with the original
+        #    layout.
         it = iter(translated_chunks)
         results = []
         for structure in structures:
@@ -152,14 +152,14 @@ class TranslationEngine:
         return results
 
     def _translate_chunks(self, chunks: list) -> list:
-        """Traduit une liste de morceaux (une phrase chacun) en un seul
-        appel translate_batch."""
+        """Translates a list of chunks (one sentence each) in a single
+        translate_batch call."""
         flat_tokens = []
         flat_prefixes = []
         for chunk in chunks:
-            # Convention NLLB/CTranslate2 : code de langue source en tête
-            # et EOS (« </s> ») en fin d'entrée ; la langue cible est
-            # fournie via target_prefix (et non dans l'entrée).
+            # NLLB/CTranslate2 convention: source language code first and
+            # EOS ("</s>") at the end of the input; the target language is
+            # provided via target_prefix (not inside the input).
             flat_tokens.append([self._source_code] + self._tokenize(chunk) + ["</s>"])
             flat_prefixes.append([self._target_code])
 
@@ -168,18 +168,18 @@ class TranslationEngine:
         outputs = []
         for result in results:
             hypothesis = result.hypotheses[0]
-            # La sortie commence par le code de langue cible : l'ignorer.
+            # The output starts with the target language code: skip it.
             if hypothesis and hypothesis[0] == self._target_code:
                 hypothesis = hypothesis[1:]
             outputs.append(self._detokenize(hypothesis))
         return outputs
 
-    # -- découpe des blocs trop longs pour le modèle
+    # -- splitting blocks that are too long for the model
 
     def _split_pieces(self, text: str, level: int = 0) -> list:
-        """Découpe récursive selon l'échelle de séparateurs, sans jamais
-        tokeniser un texte long : seuls des morceaux courts (≤ _SOFT_CHAR_LIMIT
-        caractères) sont produits, sauf chemin pathologique."""
+        """Recursive split along the separator ladder, never tokenizing a
+        long text: only short pieces (<= _SOFT_CHAR_LIMIT characters) are
+        produced, except on the pathological path."""
         if level >= len(_BOUNDARY_LEVELS):
             return [text] if text else []
         pieces = []
@@ -194,14 +194,13 @@ class TranslationEngine:
 
     def _chunk_text(self, text: str) -> list:
         """
-        Découpe un bloc (sans saut de ligne) en morceaux traduits
-        séparément : une phrase par morceau (les modèles type NLLB perdent
-        des phrases entières quand on leur fournit plusieurs phrases d'un
-        coup), une phrase trop longue étant elle-même découpée selon
-        l'échelle de séparateurs puis en jetons.
+        Splits a block (no line break) into chunks translated separately:
+        one sentence per chunk (NLLB-like models drop whole sentences
+        when fed several at once), an overly long sentence being itself
+        split along the separator ladder then into tokens.
         """
         if len(text) <= _SOFT_CHAR_LIMIT and self._token_length(text) <= self.max_source_tokens:
-            # Phrase unique courte : un seul morceau, pas de re-tokenisation.
+            # Single short sentence: one chunk, no re-tokenization.
             if _BOUNDARY_LEVELS[0].search(text) is None or not text.strip():
                 return [text]
 
@@ -211,8 +210,8 @@ class TranslationEngine:
                 continue
             piece_len = self._token_length(piece)
             if piece_len > self.max_source_tokens:
-                # Pièce atomique encore trop longue (sans aucun séparateur) :
-                # coupe en jetons, dernier recours.
+                # Atomic piece still too long (no separator at all):
+                # token-level split, last resort.
                 pieces = self._tokenize(piece)
                 for index in range(0, len(pieces), self.max_source_tokens):
                     chunks.append(

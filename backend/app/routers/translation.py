@@ -61,8 +61,8 @@ def _get_enabled_model(session: Session, direction: str) -> TranslationModel | N
 
 
 def _job_to_response(job: TranslationJob, settings_row: AppSettings) -> dict:
-    """Réponse d'un job de traduction : aperçu tronqué du résultat selon
-    preview_truncate_chars (le texte complet reste téléchargeable)."""
+    """Translation job response: truncated result preview according to
+    preview_truncate_chars (the full text remains downloadable)."""
     result_preview = None
     result_truncated = False
     if job.result_text:
@@ -100,7 +100,7 @@ def _get_owned_job(
     return job
 
 
-# ------------------------------------------------- modèles (public/admin) ---
+# ------------------------------------------------- models (public/admin) ---
 
 
 @router.get("/models")
@@ -108,7 +108,7 @@ def list_enabled_translation_models(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
-    """Directions proposées à l'utilisateur (modèle téléchargé et activé)."""
+    """Directions offered to the user (model downloaded and enabled)."""
     models = session.exec(
         select(TranslationModel).where(
             TranslationModel.is_enabled == True,  # noqa: E712
@@ -153,7 +153,7 @@ def request_translation_model_download(
     if model.status == TranslationModelStatus.downloaded:
         raise HTTPException(status_code=400, detail="Modèle déjà téléchargé")
 
-    # Le passage à "downloading" sera pris en charge par le translation-worker.
+    # The transition to "downloading" is handled by the translation-worker.
     model.status = TranslationModelStatus.downloading
     model.download_progress = 0
     model.error_message = None
@@ -174,7 +174,7 @@ def request_translation_model_deletion(
     if not model or model.status != TranslationModelStatus.downloaded:
         raise HTTPException(status_code=400, detail="Modèle non téléchargé")
 
-    # La suppression physique est effectuée par le translation-worker.
+    # The physical deletion is performed by the translation-worker.
     model.status = TranslationModelStatus.not_downloaded
     model.is_enabled = False
     model.download_progress = None
@@ -211,7 +211,7 @@ def update_translation_model(
     return model
 
 
-# ------------------------------------------------------- jobs (mode texte) ---
+# ------------------------------------------------------- jobs (text mode) ---
 
 
 @router.post("/jobs", status_code=status.HTTP_201_CREATED)
@@ -253,13 +253,13 @@ def create_text_job(
     return _job_to_response(job, limits)
 
 
-# ----------------------------------------------------- jobs (mode archive) ---
+# ----------------------------------------------------- jobs (archive mode) ---
 
 
 def _validate_zip_safety(path: str, limits: AppSettings) -> None:
-    """Vérifications de sécurité sur l'archive AVANT tout traitement :
-    archive lisible, pas de chemins malveillants (zip-slip), limites de
-    nombre de fichiers et de taille décompressée (zip-bomb)."""
+    """Security checks on the archive BEFORE any processing: readable
+    archive, no malicious paths (zip-slip), file-count and uncompressed-size
+    limits (zip bomb)."""
     try:
         with zipfile.ZipFile(path) as zf:
             infos = zf.infolist()
@@ -289,8 +289,8 @@ def _validate_zip_safety(path: str, limits: AppSettings) -> None:
                 status_code=400,
                 detail=f"Fichier chiffré non supporté : {name}",
             )
-        # Zip-slip : chemins absolus, séparateurs Windows ou remontées hors
-        # du répertoire cible.
+        # Zip-slip: absolute paths, Windows separators, or traversals
+        # outside the target directory.
         norm = os.path.normpath(name)
         if (
             "\\" in name
@@ -368,7 +368,7 @@ async def create_archive_job(
         raise
 
 
-# ------------------------------------------------------------ jobs (commun) ---
+# ------------------------------------------------------------ jobs (common) ---
 
 
 @router.get("/jobs")

@@ -5,9 +5,9 @@ import tempfile
 import pytest
 from fastapi.testclient import TestClient
 
-# Les variables d'environnement doivent être définies AVANT l'import de
-# l'application, car app.core.config.settings et app.core.database.engine
-# sont initialisés au chargement du module.
+# Environment variables must be set BEFORE importing the application,
+# because app.core.config.settings and app.core.database.engine are
+# initialized at module load time.
 _tmp_dir = tempfile.mkdtemp(prefix="transcription-tests-")
 os.environ["SQLITE_PATH"] = os.path.join(_tmp_dir, "test.db")
 os.environ["AUDIO_TMP_PATH"] = os.path.join(_tmp_dir, "audio_tmp")
@@ -49,10 +49,9 @@ def admin_headers(admin_token):
 @pytest.fixture()
 def enabled_default_model():
     """
-    Insère directement en base un modèle Whisper marqué comme téléchargé,
-    activé et par défaut, pour permettre la création de jobs sans dépendre
-    du téléchargement réel d'un modèle faster-whisper (trop lourd pour des
-    tests unitaires).
+    Inserts a Whisper model row directly in the database, marked as
+    downloaded, enabled and default, so jobs can be created without an
+    actual faster-whisper download (too heavy for unit tests).
     """
     from sqlmodel import select
 
@@ -90,7 +89,7 @@ def _generate_audio_file(path: str, duration_seconds: int, fmt: str = "wav") -> 
 
 @pytest.fixture()
 def short_audio_file():
-    """Fichier audio valide de ~1 seconde (largement sous les limites par défaut)."""
+    """Valid audio file of ~1 second (well under the default limits)."""
     path = os.path.join(_tmp_dir, "short_audio.wav")
     _generate_audio_file(path, duration_seconds=1)
     yield path
@@ -98,7 +97,7 @@ def short_audio_file():
 
 @pytest.fixture()
 def invalid_audio_file():
-    """Fichier avec une extension audio valide mais un contenu non exploitable."""
+    """File with a valid audio extension but unusable content."""
     path = os.path.join(_tmp_dir, "invalid_audio.wav")
     with open(path, "wb") as f:
         f.write(b"this is not a real audio file")

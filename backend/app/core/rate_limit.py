@@ -1,9 +1,9 @@
 """
-Limitation simple des tentatives de connexion par identifiant, en mémoire.
+Simple in-memory rate limiting of login attempts per identifier.
 
-Suffisant pour une instance unique de backend (pas de scale horizontal
-prévu pour ce service). Si le backend venait à être répliqué, cette logique
-devrait être déplacée vers un stockage partagé (ex. Redis).
+Good enough for a single backend instance (no horizontal scaling planned
+for this service). If the backend ever gets replicated, this logic should
+move to shared storage (e.g. Redis).
 """
 
 import time

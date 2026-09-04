@@ -24,7 +24,7 @@ def test_json_translates_string_values_only():
     assert data["enabled"] is True
     assert data["nested"]["label"] == "WORLD"
     assert data["nested"]["list"] == ["A", "B"]
-    # Les clés ne sont jamais traduites.
+    # Keys are never translated.
     assert "nested" in data and "label" in data["nested"]
 
 
@@ -83,7 +83,7 @@ def test_html_excludes_script_style_pre_code():
 def test_html_preserves_entities_in_text():
     html = "<p>Caf&eacute; &amp; th&eacute;</p>"
     result = translate_html_content(html, lambda texts: [t.replace("X", "") for t in texts])
-    # Les entités doivent survivre à la traduction (jetons privés restaurés).
+    # Entities must survive translation (private tokens restored).
     assert "&eacute;" in result
     assert "&amp;" in result
     assert "\ue000" not in result  # aucun jeton ne doit fuiter
@@ -92,7 +92,7 @@ def test_html_preserves_entities_in_text():
 def test_html_attrs_entities_decoded_and_escaped():
     html = '<img alt="Caf&eacute; &quot;bon&quot;">'
     result = translate_html_content(html, upper_batch)
-    # Valeur d'attribut : entités décodées avant traduction, ré-échappées après.
+    # Attribute value: entities decoded before translation, re-escaped after.
     assert "CAFÉ" in result
     assert "&quot;" in result or '"' in result
 
@@ -117,4 +117,4 @@ def test_html_whitespace_only_text_nodes_untouched():
     html = "<div>\n  <span>Hello</span>\n</div>"
     result = translate_html_content(html, upper_batch)
     assert "HELLO" in result
-    assert "\n  " in result  # les blancs ne sont pas traduits ni consommés
+    assert "\n  " in result  # whitespace is neither translated nor consumed

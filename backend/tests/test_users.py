@@ -47,7 +47,7 @@ def test_create_user_weak_password_rejected(client, admin_headers):
 
 
 def test_regular_user_cannot_create_user(client, admin_headers):
-    # Créer un utilisateur non-admin puis se connecter avec son compte
+    # Create a non-admin user then log in with that account
     client.post(
         "/api/users",
         json={"login": "regular", "password": "RegularPass1", "role": "user"},
@@ -84,7 +84,7 @@ def test_admin_can_deactivate_user(client, admin_headers):
     assert response.status_code == 200
     assert response.json()["is_active"] is False
 
-    # L'utilisateur désactivé ne peut plus se connecter
+    # The disabled user can no longer log in
     login_response = client.post(
         "/api/auth/login",
         json={"login": "todeactivate", "password": "DeactPass1"},

@@ -1,5 +1,5 @@
-"""Tests du traducteur Markdown : la syntaxe doit être préservée à
-l'identique, seuls les textes visibles sont traduits."""
+"""Markdown translator tests: the syntax must be preserved exactly,
+only visible text is translated."""
 
 from app.translators import translate_markdown_content
 
@@ -94,7 +94,7 @@ def test_link_with_title_part_untouched():
     md = "Le [guide complet](/fr/guide.pdf \"Télécharger le guide\") est prêt.\n"
     result = translate_markdown_content(md, upper_batch)
     assert "/fr/guide.pdf" in result
-    assert "Télécharger le guide" in result  # chemin + titre intacts
+    assert "Télécharger le guide" in result  # path + title intact
     assert "[GUIDE COMPLET](" in result
 
 
@@ -191,7 +191,7 @@ Pour en savoir plus, consultez la [documentation](https://docs.example.com).
 
 
 def test_punctuation_only_fragments_not_translated():
-    # Le « . » après le barré ne doit pas partir au modèle (sinon hallucination).
+    # The "." after the strike must not be sent to the model (else hallucination).
     md = "Lisez le ~~manuel ancien~~.\n"
     result = translate_markdown_content(md, upper_batch)
     assert result == "LISEZ LE ~~MANUEL ANCIEN~~.\n"
@@ -240,8 +240,8 @@ def test_table_escaped_pipe_not_split():
     )
     result = translate_markdown_content(md, upper_batch)
     lines = result.splitlines()
-    # La cellule contenant un pipe échappé reste une seule cellule.
-    assert lines[2].count("|") == 4  # 2 bordures + 2 séparateurs
+    # The cell containing an escaped pipe stays a single cell.
+    assert lines[2].count("|") == 4  # 2 borders + 2 separators
     assert "\\|" in lines[2]
 
 

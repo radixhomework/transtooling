@@ -11,14 +11,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
-# Les tests (dossier tests/, pytest.ini) restent hors de l'image de
-# production ; ils sont exécutés en dehors du build (voir README backend).
+# Tests (tests/ folder, pytest.ini) stay out of the production image;
+# they are run outside the build (see backend README).
 
-# Volumes attendus au runtime (montés via docker-compose) :
-#   /data          -> base SQLite
-#   /audio_tmp     -> fichiers audio temporaires (purgés après traitement)
-#   /transcripts   -> fichiers .vtt générés
-#   /models        -> modèles Whisper téléchargés (partagé avec le worker)
+# Volumes expected at runtime (mounted via docker-compose):
+#   /data          -> SQLite database
+#   /audio_tmp     -> temporary audio files (purged after processing)
+#   /transcripts   -> generated .vtt files
+#   /models        -> downloaded Whisper models (shared with the worker)
 
 EXPOSE 8000
 

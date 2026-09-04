@@ -40,17 +40,18 @@ engine_db = create_engine(
     connect_args={"check_same_thread": False},
 )
 
-# Cache en mémoire des moteurs déjà chargés (un par direction au plus,
-# pour borner la RAM).
+# In-memory cache of already loaded engines (at most one per
+# direction, to bound RAM usage).
 _loaded_engines: dict = {}
 
 
 def _get_engine(direction: str) -> TranslationEngine:
     if direction not in _loaded_engines:
-        logger.info("Chargement du modèle de traduction '%s'...", direction)
+        logger.info("Loading translation model '%s'...", direction)
         _loaded_engines.clear()
-        # allow_patterns aussi en lecture locale : sinon snapshot_download
-        # valide la complétude du dépôt ENTIER (fichiers non téléchargés).
+        # allow_patterns also for local reads: otherwise snapshot_download
+        # validates the completeness of the WHOLE repository
+        # (non-downloaded files).
         model_path = snapshot_download(
             repo_id=DIRECTION_REPOS[direction],
             cache_dir=settings.translation_models_path,
@@ -62,7 +63,7 @@ def _get_engine(direction: str) -> TranslationEngine:
 
 
 def _is_cancel_requested(session: Session, job_id: int) -> bool:
-    """Relit le fanion d'annulation depuis la base (posé par l'API)."""
+    """Re-reads the cancellation flag from the database (set by the API)."""
     row = session.exec(
         select(TranslationJob.cancel_requested).where(TranslationJob.id == job_id)
     ).first()
@@ -74,7 +75,7 @@ def _check_cancelled(session: Session, job_id: int) -> None:
         raise JobCancelled()
 
 
-# ------------------------------------------------------- cache de traduction
+# ---------------------------------------------------- translation cache
 
 
 def cache_key(direction: str, text: str) -> str:
@@ -83,10 +84,10 @@ def cache_key(direction: str, text: str) -> str:
 
 def translate_texts(session: Session, direction: str, texts: list, job_id: int = None) -> list:
     """
-    Traduit une liste de textes : lecture du cache AVANT traduction, calcul
-    uniquement des textes manquants (dédupliqués), écriture du cache APRÈS
-    calcul uniquement (jamais sur un hit). Lève JobCancelled si l'annulation
-    du job est demandée entre deux lots.
+    Translates a list of texts: cache read BEFORE translating, computing
+    only the missing (deduplicated) texts, cache written AFTER computing
+    only (never on a hit). Raises JobCancelled if the job cancellation is
+    requested between two batches.
     """
     results: dict = {}
     misses: list = []
@@ -120,12 +121,12 @@ def translate_texts(session: Session, direction: str, texts: list, job_id: int =
     return [results[text] for text in texts]
 
 
-# ------------------------------------------------- modèles : téléchargement
+# ------------------------------------------------------ models: downloads
 
 
 class _DownloadProgressState:
-    """Agrège la progression d'un snapshot_download et la persiste (throttle)
-    dans TranslationModel.download_progress."""
+    """Aggregates snapshot_download progress and persists it (throttled)
+    to TranslationModel.download_progress."""
 
     def __init__(self, model_id: int, min_interval_seconds: float = 1.0):
         self._model_id = model_id
@@ -134,8 +135,8 @@ class _DownloadProgressState:
         self._active_bars: dict = {}
         self._completed_bytes = 0
         self._completed_total = 0
-        # -inf : la première écriture passe toujours (time.monotonic() peut
-        # démarrer proche de zéro dans un conteneur fraîchement lancé).
+        # -inf: the first write always goes through (time.monotonic() can
+        # start near zero in a freshly launched container).
         self._last_write = float("-inf")
         self._last_percent = -1
 
@@ -184,7 +185,7 @@ class _DownloadProgressState:
                     session.add(model)
                     session.commit()
         except Exception:  # noqa: BLE001
-            logger.debug("Écriture de la progression impossible", exc_info=True)
+            logger.debug("Could not write progress", exc_info=True)
 
 
 def _make_progress_tqdm_class(state: _DownloadProgressState) -> type:
@@ -201,15 +202,15 @@ def _make_progress_tqdm_class(state: _DownloadProgressState) -> type:
 
 
 def _repo_cache_glob(direction: str) -> str:
-    """Glob du répertoire de cache huggingface pour le dépôt portant la
-    direction (convention : models--<org>--<repo>)."""
+    """Glob of the huggingface cache directory for the repo carrying the
+    direction (convention: models--<org>--<repo>)."""
     repo = DIRECTION_REPOS[direction]
     return os.path.join(settings.translation_models_path, f"models--{repo.replace('/', '--')}")
 
 
 def _compute_model_disk_size_mb(direction: str):
-    """Taille réelle sur disque du cache huggingface du modèle, en Mo
-    (symlinks ignorés : blobs + snapshots ne comptent pas double)."""
+    """Actual on-disk size of the model's huggingface cache, in MB
+    (symlinks ignored: blobs + snapshots are not counted twice)."""
     total_bytes = 0
     found = False
     for path in glob.glob(_repo_cache_glob(direction)):
@@ -229,14 +230,14 @@ def _compute_model_disk_size_mb(direction: str):
 
 
 def process_pending_model_downloads(session: Session) -> None:
-    """Télécharge les modèles de traduction marqués 'downloading' par l'admin."""
+    """Downloads translation models marked 'downloading' by the admin."""
     pending = session.exec(
         select(TranslationModel).where(TranslationModel.status == TranslationModelStatus.downloading)
     ).all()
 
     for model in pending:
         direction = model.direction.value
-        logger.info("Téléchargement du modèle de traduction '%s'...", direction)
+        logger.info("Downloading translation model '%s'...", direction)
         model.download_progress = 0
         session.add(model)
         session.commit()
@@ -254,9 +255,9 @@ def process_pending_model_downloads(session: Session) -> None:
             model.download_progress = 100
             model.disk_size_mb = _compute_model_disk_size_mb(direction)
             model.error_message = None
-            logger.info("Modèle de traduction '%s' téléchargé.", direction)
+            logger.info("Translation model '%s' downloaded.", direction)
         except Exception as exc:  # noqa: BLE001
-            logger.exception("Échec du téléchargement du modèle '%s'", direction)
+            logger.exception("Model '%s' download failed", direction)
             model.status = TranslationModelStatus.error
             model.download_progress = None
             model.error_message = str(exc)
@@ -266,11 +267,12 @@ def process_pending_model_downloads(session: Session) -> None:
 
 
 def process_pending_model_deletions(session: Session) -> None:
-    """Supprime physiquement les fichiers d'un modèle repassé à
-    'not_downloaded' (convention cache huggingface : models--<org>--<repo>).
+    """
+    Physically deletes the files of a model switched back to
+    'not_downloaded' (huggingface cache convention: models--<org>--<repo>).
 
-    Le modèle NLLB étant partagé par toutes les directions, les fichiers ne
-    sont supprimés qu'aucune autre direction téléchargée ne s'appuie dessus.
+    The NLLB model being shared by all directions, files are only deleted
+    when no other downloaded direction relies on them.
     """
     models = session.exec(select(TranslationModel)).all()
     downloaded_repos = {
@@ -286,11 +288,11 @@ def process_pending_model_deletions(session: Session) -> None:
             continue
         for path in glob.glob(_repo_cache_glob(model.direction.value)):
             if os.path.isdir(path):
-                logger.info("Suppression du modèle de traduction sur disque : %s", path)
+                logger.info("Deleting translation model from disk: %s", path)
                 shutil.rmtree(path, ignore_errors=True)
 
 
-# ------------------------------------------------------------- jobs : commun
+# ------------------------------------------------------------ jobs: common
 
 
 def _resolve_archive_path(job: TranslationJob):
@@ -301,25 +303,26 @@ def _resolve_archive_path(job: TranslationJob):
 
 
 def recover_stale_processing_jobs(session: Session) -> None:
-    """Tout job resté 'processing' signale un arrêt anormal du worker :
-    remis en 'pending' si l'entrée existe encore (texte/archive), sinon erreur."""
+    """Any job left in 'processing' signals an abnormal worker stop:
+    put back in 'pending' if its input still exists (text/archive),
+    otherwise marked as error."""
     stale_jobs = session.exec(
         select(TranslationJob).where(TranslationJob.status == TranslationJobStatus.processing)
     ).all()
 
     for job in stale_jobs:
         if job.job_type == TranslationJobType.text and job.source_text:
-            logger.warning("Job %s bloqué en 'processing' : remis en file.", job.id)
+            logger.warning("Job %s stuck in 'processing': re-queued.", job.id)
             job.status = TranslationJobStatus.pending
             job.started_at = None
         elif (
             job.job_type == TranslationJobType.archive and _resolve_archive_path(job)
         ):
-            logger.warning("Job %s bloqué en 'processing' : remis en file.", job.id)
+            logger.warning("Job %s stuck in 'processing': re-queued.", job.id)
             job.status = TranslationJobStatus.pending
             job.started_at = None
         else:
-            logger.warning("Job %s bloqué en 'processing' sans entrée : marqué en erreur.", job.id)
+            logger.warning("Job %s stuck in 'processing' without input: marked as error.", job.id)
             job.status = TranslationJobStatus.error
             job.error_message = "Traitement interrompu (redémarrage du worker) et entrée introuvable"
             job.finished_at = datetime.utcnow()
@@ -328,7 +331,7 @@ def recover_stale_processing_jobs(session: Session) -> None:
 
 
 def process_pending_job(session: Session) -> bool:
-    """Traite un job de traduction en attente (mode texte ou archive)."""
+    """Processes a pending translation job (text or archive mode)."""
     job = session.exec(
         select(TranslationJob)
         .where(TranslationJob.status == TranslationJobStatus.pending)
@@ -344,33 +347,33 @@ def process_pending_job(session: Session) -> bool:
     session.commit()
 
     try:
-        # Annulation demandée pendant que le job était en file : stoppé
-        # immédiatement après sa prise en charge.
+        # Cancellation requested while the job was queued: stopped
+        # right after being picked up.
         _check_cancelled(session, job.id)
         if job.job_type == TranslationJobType.text:
             _process_text_job(session, job)
         else:
             _process_archive_job(session, job)
     except JobCancelled:
-        logger.info("Job %s annulé par l'utilisateur.", job.id)
+        logger.info("Job %s cancelled by the user.", job.id)
         job.status = TranslationJobStatus.cancelled
         job.error_message = None
         job.finished_at = datetime.utcnow()
-        # Nettoyage des entrées temporaires (l'annulation peut survenir avant
-        # l'entrée dans le traitement proprement dit).
+        # Cleanup of temporary inputs (cancellation can occur before
+        # entering the actual processing).
         if job.job_type == TranslationJobType.archive:
             cancelled_zip = _resolve_archive_path(job)
             if cancelled_zip and os.path.exists(cancelled_zip):
                 os.remove(cancelled_zip)
             job.archive_tmp_filename = None
     except _BlockingJobError as exc:
-        logger.exception("Erreur bloquante sur le job %s", job.id)
+        logger.exception("Blocking error on job %s", job.id)
         job.status = TranslationJobStatus.error
         job.error_message = str(exc.reason or exc)
         job.stopped_reason = exc.reason
         job.finished_at = datetime.utcnow()
     except Exception as exc:  # noqa: BLE001
-        logger.exception("Erreur lors du traitement du job %s", job.id)
+        logger.exception("Error while processing job %s", job.id)
         job.status = TranslationJobStatus.error
         job.error_message = str(exc)
         job.finished_at = datetime.utcnow()
@@ -390,7 +393,7 @@ class _BlockingJobError(Exception):
         self.reason = reason
 
 
-# ------------------------------------------------------------ jobs : texte
+# ------------------------------------------------------------- jobs: text
 
 
 def _process_text_job(session: Session, job: TranslationJob) -> None:
@@ -401,10 +404,10 @@ def _process_text_job(session: Session, job: TranslationJob) -> None:
     job.result_text = translated
     job.status = TranslationJobStatus.done
     job.finished_at = datetime.utcnow()
-    logger.info("Job de traduction %s terminé.", job.id)
+    logger.info("Translation job %s completed.", job.id)
 
 
-# ---------------------------------------------------------- jobs : archive
+# ---------------------------------------------------------- jobs: archive
 
 
 def _get_translatable_extensions(session: Session) -> set:
@@ -414,8 +417,8 @@ def _get_translatable_extensions(session: Session) -> set:
 
 
 def _extract_archive(zip_path: str, extract_dir: str, session: Session) -> None:
-    """Extraction sécurisée : rejet de tout chemin tentant de sortir du
-    répertoire cible (zip-slip), vérifié membre par membre."""
+    """Secure extraction: any path trying to escape the target directory
+    (zip-slip) is rejected, checked member by member."""
     limits = session.get(AppSettings, 1)
     max_uncompressed = (
         limits.max_archive_uncompressed_mb * 1024 * 1024 if limits else 500 * 1024 * 1024
@@ -424,14 +427,14 @@ def _extract_archive(zip_path: str, extract_dir: str, session: Session) -> None:
     with zipfile.ZipFile(zip_path) as zf:
         for info in zf.infolist():
             if info.is_dir():
-                # Conserver les répertoires (y compris vides) pour pouvoir
-                # reconstruire l'arborescence à l'identique.
+                # Keep directories (including empty ones) so the tree
+                # can be rebuilt identically.
                 os.makedirs(os.path.join(extract_dir, info.filename), exist_ok=True)
                 continue
             total += info.file_size
             if total > max_uncompressed:
                 raise _BlockingJobError("Taille décompressée de l'archive au-delà de la limite")
-            # Zip-slip : le chemin résolu doit rester sous extract_dir.
+            # Zip-slip: the resolved path must stay under extract_dir.
             target = os.path.realpath(os.path.join(extract_dir, info.filename))
             if not target.startswith(os.path.realpath(extract_dir) + os.sep):
                 raise _BlockingJobError(f"Chemin de fichier invalide dans l'archive : {info.filename}")
@@ -459,8 +462,8 @@ def _translate_archive_file(
 
 
 def _rebuild_archive(extract_dir: str, output_path: str) -> None:
-    """Reconstruit l'archive résultat en conservant strictement les noms et
-    l'arborescence (les entrées répertoires vides sont conservées aussi)."""
+    """Rebuilds the result archive strictly preserving names and tree
+    structure (empty directory entries are kept too)."""
     with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for root, dirs, files in os.walk(extract_dir):
             for dir_name in dirs:
@@ -496,7 +499,7 @@ def _process_archive_job(session: Session, job: TranslationJob) -> None:
     try:
         _extract_archive(zip_path, extract_dir, session)
 
-        # Parcours déterministe (trié) pour un rapport stable.
+        # Deterministic (sorted) traversal for a stable report.
         all_files = []
         for root, _dirs, files in os.walk(extract_dir):
             for file_name in files:
@@ -510,7 +513,7 @@ def _process_archive_job(session: Session, job: TranslationJob) -> None:
             _check_cancelled(session, job.id)
             ext = os.path.splitext(rel)[1].lstrip(".").lower()
             if ext not in translatable_exts:
-                report["copied"] += 1  # copié tel quel dans l'archive finale
+                report["copied"] += 1  # copied as-is into the final archive
                 continue
             try:
                 _translate_archive_file(full, ext, session, direction, job.id)
@@ -518,9 +521,9 @@ def _process_archive_job(session: Session, job: TranslationJob) -> None:
             except JobCancelled:
                 raise
             except Exception as exc:  # noqa: BLE001
-                # Traitement « au mieux » : fichier copié tel quel + erreur
-                # détaillée dans le rapport.
-                logger.warning("Fichier %s non traduit (%s), copié tel quel.", rel, exc)
+                # Best-effort processing: file copied as-is + detailed
+                # error in the report.
+                logger.warning("File %s not translated (%s), copied as-is.", rel, exc)
                 report["errors"] += 1
                 report["error_details"].append({"file": rel, "error": str(exc)})
 
@@ -533,7 +536,7 @@ def _process_archive_job(session: Session, job: TranslationJob) -> None:
         job.status = TranslationJobStatus.done
         job.finished_at = datetime.utcnow()
         logger.info(
-            "Job d'archive %s terminé : %s traduits, %s copiés, %s erreurs.",
+            "Archive job %s completed: %s translated, %s copied, %s errors.",
             job.id,
             report["translated"],
             report["copied"],
@@ -541,14 +544,14 @@ def _process_archive_job(session: Session, job: TranslationJob) -> None:
         )
 
     finally:
-        # Archive source et répertoire d'extraction ne sont jamais conservés.
+        # Source archive and extraction directory are never kept.
         shutil.rmtree(extract_dir, ignore_errors=True)
         if zip_path and os.path.exists(zip_path):
             os.remove(zip_path)
         job.archive_tmp_filename = None
 
 
-# ------------------------------------------------------------- boucle main
+# ------------------------------------------------------------- main loop
 
 _SCHEMA_PATCHES = {
     "translationjob": {
@@ -566,8 +569,8 @@ _SCHEMA_PATCHES = {
 
 
 def _ensure_schema_upgrades() -> None:
-    """Filet de sécurité (le backend applique le même correctif à son
-    démarrage) pour les colonnes ajoutées après le schéma initial."""
+    """Safety net (the backend applies the same patch at its startup) for
+    columns added after the initial schema."""
     from sqlalchemy import inspect, text
 
     inspector = inspect(engine_db)
@@ -584,7 +587,7 @@ def _ensure_schema_upgrades() -> None:
 
 def main_loop() -> None:
     logger.info(
-        "Worker de traduction démarré. Polling toutes les %ss.",
+        "Translation worker started. Polling every %ss.",
         settings.poll_interval_seconds,
     )
 
@@ -594,7 +597,7 @@ def main_loop() -> None:
         try:
             recover_stale_processing_jobs(startup_session)
         except Exception:  # noqa: BLE001
-            logger.exception("Erreur lors de la reprise des jobs bloqués au démarrage")
+            logger.exception("Error while recovering stuck jobs at startup")
 
     consecutive_errors = 0
     max_backoff_seconds = 60
@@ -607,7 +610,7 @@ def main_loop() -> None:
                 processed = process_pending_job(session)
                 consecutive_errors = 0
             except Exception:  # noqa: BLE001
-                logger.exception("Erreur inattendue dans la boucle principale")
+                logger.exception("Unexpected error in the main loop")
                 processed = False
                 consecutive_errors += 1
 
@@ -616,7 +619,7 @@ def main_loop() -> None:
                 settings.poll_interval_seconds * (2 ** consecutive_errors),
                 max_backoff_seconds,
             )
-            logger.warning("Pause de %ss après %s erreur(s) consécutive(s).", backoff, consecutive_errors)
+            logger.warning("Pausing %ss after %s consecutive error(s).", backoff, consecutive_errors)
             time.sleep(backoff)
         elif not processed:
             time.sleep(settings.poll_interval_seconds)

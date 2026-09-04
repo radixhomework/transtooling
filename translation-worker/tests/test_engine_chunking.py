@@ -1,5 +1,5 @@
-"""Tests du moteur : découpe des textes longs (échelle de séparateurs),
-préservation de la mise en page, annulation entre lots."""
+"""Engine tests: long-text splitting (separator ladder), layout
+preservation, cancellation between batches."""
 
 import pytest
 
@@ -13,7 +13,7 @@ class _IdentityResult:
 
 class _IdentityTranslator:
     """Simule CTranslate2 : renvoie les jetons tels quels (hors code source
-    et EOS d'entrée), en préfixant la sortie par le code cible."""
+    and EOS of the input), prefixing the output with the target code."""
 
     def translate_batch(self, token_lists, target_prefix=None):
         prefixes = target_prefix or [[] for _ in token_lists]
@@ -25,9 +25,9 @@ class _IdentityTranslator:
 
 
 def make_engine(max_source_tokens=10):
-    # __new__ pour contourner __init__ (pas de modèle réel requis) ; les
-    # points d'entrée de tokenisation sont remplacés par des stubs simples
-    # (1 jeton par mot).
+    # __new__ to bypass __init__ (no real model required); the
+    # tokenization entry points are replaced with simple stubs
+    # (one token per word).
     engine = TranslationEngine.__new__(TranslationEngine)
     engine._tokenize = lambda text: text.split(" ")
     engine._detokenize = lambda pieces: " ".join(pieces)
@@ -39,7 +39,7 @@ def make_engine(max_source_tokens=10):
     return engine
 
 
-# --- découpe des textes longs ---
+# --- Long-text splitting ---
 
 
 def test_short_text_single_chunk():
@@ -51,8 +51,8 @@ def test_long_text_split_one_sentence_per_chunk():
     engine = make_engine(max_source_tokens=10)
     text = " ".join(f"mot{i}." for i in range(25))  # 25 phrases de 1 mot
     chunks = engine._chunk_text(text)
-    # Une phrase par morceau (les modèles type NLLB perdent des phrases
-    # quand on en fournit plusieurs d'un coup).
+    # One sentence per chunk (NLLB-like models drop sentences when fed
+    # several at once).
     assert len(chunks) == 25
     assert all(len(c.split()) <= 10 for c in chunks)
     assert " ".join(chunks).count("mot") == 25
@@ -65,29 +65,29 @@ def test_text_without_punctuation_split_at_words():
     assert len(chunks) >= 4
     assert all(len(c.split()) <= 5 for c in chunks)
     assert sum(len(c.split()) for c in chunks) == 20
-    # Aucun mot coupé : tous les mots d'origine sont retrouvés intacts.
+    # No word cut: all original words are found intact.
     words = {w for c in chunks for w in c.split()}
     assert len(words) == 20
 
 
 def test_mixed_long_sentence_falls_through_separator_ladder():
     engine = make_engine(max_source_tokens=6)
-    # Une « phrase » très longue avec des virgules : coupée aux virgules
-    # plutôt qu'au milieu d'un mot.
+    # A very long "sentence" with commas: split at the commas
+    # rather than in the middle of a word.
     text = "a, " * 30 + "fin."
     chunks = engine._chunk_text(text)
     assert all(len(c.split()) <= 6 for c in chunks)
     assert "fin." in chunks[-1]
 
 
-# --- préservation de la mise en page ---
+# --- Layout preservation ---
 
 
 def test_translate_preserves_line_breaks_and_indentation():
     engine = make_engine()
     text = "Hello world.\n\n\n  Indented line here.\nLast line."
-    # Translation identité (morceaux renvoyés tels quels) : on vérifie la
-    # structure (sauts de ligne, indentation) réinsérée telle quelle.
+    # Identity translation (chunks returned as-is): we verify the
+    # structure (line breaks, indentation) reinserted verbatim.
     result = engine.translate([text])[0]
     assert result == text
 
@@ -105,7 +105,7 @@ def test_translate_preserves_trailing_spaces():
     assert result == "line with trailing   "
 
 
-# --- annulation entre les lots ---
+# --- Cancellation between batches ---
 
 
 def test_translate_checks_should_continue_between_batches():
@@ -119,5 +119,5 @@ def test_translate_checks_should_continue_between_batches():
 
     with pytest.raises(JobCancelled):
         engine.translate(["a", "b", "c"], should_continue=should_continue)
-    # Le premier lot part sans contrôle, l'annulation est vue avant le 2e.
+    # The first batch goes without a check; cancellation is seen before the 2nd.
     assert len(calls) == 1

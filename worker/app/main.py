@@ -17,24 +17,24 @@ from app.vtt import segments_to_vtt
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [transcription-worker] %(message)s")
 logger = logging.getLogger(__name__)
 
-# Throttle des écritures de progression en base : SQLite est partagé avec le
-# backend, on évite de committer à chaque segment/token du téléchargement.
+# Throttle for progress writes to the database: SQLite is shared with the
+# backend, so we avoid committing on every segment/token.
 PROGRESS_MIN_DELTA_PERCENT = 2
 PROGRESS_MIN_INTERVAL_SECONDS = 2.0
-# Intervalle minimal entre deux consultations du fanion d'annulation en base.
+# Minimum interval between two cancel-flag reads from the database.
 CANCEL_CHECK_INTERVAL_SECONDS = 1.0
 
 
 class JobCancelled(Exception):
-    """Levée quand l'annulation d'un job est demandée pendant son traitement."""
+    """Raised when job cancellation is requested during processing."""
 
 engine = create_engine(
     f"sqlite:///{settings.sqlite_path}",
     connect_args={"check_same_thread": False},
 )
 
-# Cache en mémoire des modèles faster-whisper déjà chargés (évite de recharger
-# le modèle à chaque job s'il est identique au précédent).
+# In-memory cache of already loaded faster-whisper models (avoids
+# reloading the model on every job when it matches the previous one).
 _loaded_models: dict = {}
 
 
@@ -42,8 +42,8 @@ def _get_whisper_model(model_name: str):
     from faster_whisper import WhisperModel as FasterWhisperModel
 
     if model_name not in _loaded_models:
-        logger.info("Chargement du modèle faster-whisper '%s' en mémoire...", model_name)
-        _loaded_models.clear()  # un seul modèle en mémoire à la fois (simplicité/RAM)
+        logger.info("Loading faster-whisper model '%s' into memory...", model_name)
+        _loaded_models.clear()  # only one model in memory at a time (simplicity/RAM)
         _loaded_models[model_name] = FasterWhisperModel(
             model_name,
             device="cpu",
@@ -55,9 +55,9 @@ def _get_whisper_model(model_name: str):
 
 class _DownloadProgressState:
     """
-    Agrège la progression d'un snapshot_download (une barre tqdm par fichier,
-    téléchargés potentiellement en parallèle par huggingface_hub) et la
-    persiste dans WhisperModel.download_progress, avec throttle.
+    Aggregates snapshot_download progress (one tqdm bar per file, potentially
+    downloaded in parallel by huggingface_hub) and persists it to
+    WhisperModel.download_progress, with throttling.
     """
 
     def __init__(self, model_id: int, min_interval_seconds: float = 1.0):
@@ -67,8 +67,8 @@ class _DownloadProgressState:
         self._active_bars: dict[int, tuple[int, int | None]] = {}  # id(bar) -> (octets, total)
         self._completed_bytes = 0
         self._completed_total = 0
-        # -inf : la première écriture passe toujours (time.monotonic() peut
-        # démarrer proche de zéro dans un conteneur fraîchement lancé).
+        # -inf: the first write always goes through (time.monotonic() can
+        # start near zero in a freshly launched container).
         self._last_write = float("-inf")
         self._last_percent = -1
 
@@ -81,8 +81,8 @@ class _DownloadProgressState:
             self._write_percent(percent)
 
     def finalize(self, bar_id: int, bar_bytes: int, bar_total: int | None) -> None:
-        """Transfère une barre fermée vers le cumul : son id peut être
-        réutilisé par une autre barre (ids Python recyclés)."""
+        """Moves a closed bar into the cumulative totals: its id can be
+        reused by another bar (Python recycles ids)."""
         percent = None
         with self._lock:
             self._active_bars.pop(bar_id, None)
@@ -100,9 +100,9 @@ class _DownloadProgressState:
         downloaded = self._completed_bytes + sum(n for n, _ in self._active_bars.values())
         percent = int(min(99, downloaded * 100 / total))
         now = time.monotonic()
-        # Double throttle : délai minimum écoulé ET progression réellement
-        # changée (sinon un téléchargement rapide écrirait en base à chaque
-        # petit saut de 1 %).
+        # Double throttle: minimum delay elapsed AND progress actually
+        # changed (otherwise a fast download would write to the database
+        # on every small 1% step).
         if now - self._last_write < self._min_interval_seconds:
             return None
         if percent == self._last_percent:
@@ -113,8 +113,8 @@ class _DownloadProgressState:
 
     def _write_percent(self, percent: int) -> None:
         try:
-            # Session courte dédiée : ce callback peut être appelé depuis un
-            # thread de téléchargement huggingface_hub, pas celui du worker.
+            # Dedicated short-lived session: this callback can be called from
+            # a huggingface_hub download thread, not the worker's thread.
             with Session(engine) as session:
                 model = session.get(WhisperModel, self._model_id)
                 if model and model.status == ModelStatus.downloading:
@@ -122,13 +122,13 @@ class _DownloadProgressState:
                     session.add(model)
                     session.commit()
         except Exception:  # noqa: BLE001
-            # Best-effort : un souci d'écriture ne doit jamais casser le
-            # téléchargement lui-même.
-            logger.debug("Écriture de la progression impossible", exc_info=True)
+            # Best effort: a write failure must never break the
+            # download itself.
+            logger.debug("Could not write progress", exc_info=True)
 
 
 def _make_progress_tqdm_class(state: _DownloadProgressState) -> type:
-    """Classe tqdm branchée sur un état de progression (closure), à passer à
+    """tqdm class bound to a progress state (closure), to be passed to
     snapshot_download via tqdm_class."""
 
     class _ProgressTqdm(hf_tqdm):
@@ -144,10 +144,10 @@ def _make_progress_tqdm_class(state: _DownloadProgressState) -> type:
 
 
 def _compute_model_disk_size_mb(model_name: str) -> int | None:
-    """Taille réelle sur disque du cache huggingface du modèle, en Mo.
+    """Actual on-disk size of the model's huggingface cache, in MB.
 
-    Le cache utilise blobs (fichiers réels) + snapshots (symlinks vers les
-    blobs) : les liens sont ignorés pour éviter le double comptage.
+    The cache uses blobs (real files) + snapshots (symlinks to blobs):
+    links are ignored to avoid double counting.
     """
     pattern = os.path.join(settings.whisper_models_path, f"*{model_name}*")
     total_bytes = 0
@@ -169,8 +169,8 @@ def _compute_model_disk_size_mb(model_name: str) -> int | None:
 
 
 def backfill_model_disk_sizes(session: Session) -> None:
-    """Renseigne la taille disque des modèles téléchargés avant l'ajout de la
-    colonne disk_size_mb (jamais calculée pour eux sinon)."""
+    """Fills in the disk size of models downloaded before the disk_size_mb
+    column was added (otherwise never computed for them)."""
     models = session.exec(
         select(WhisperModel).where(WhisperModel.status == ModelStatus.downloaded)
     ).all()
@@ -179,7 +179,7 @@ def backfill_model_disk_sizes(session: Session) -> None:
             continue
         size = _compute_model_disk_size_mb(model.name)
         if size is not None:
-            logger.info("Taille disque du modèle '%s' renseignée : %s Mo.", model.name, size)
+            logger.info("Disk size of model '%s' recorded: %s MB.", model.name, size)
             model.disk_size_mb = size
             session.add(model)
     session.commit()
@@ -194,11 +194,11 @@ def _resolve_audio_path(job: TranscriptionJob) -> str | None:
 
 def recover_stale_processing_jobs(session: Session) -> None:
     """
-    Au démarrage du worker, tout job resté au statut 'processing' signale un
-    arrêt anormal (crash, redémarrage du conteneur) pendant son traitement.
-    L'audio temporaire n'est supprimé qu'une fois le traitement terminé
-    (succès ou échec), donc il est probablement toujours présent : on
-    remet ces jobs en 'pending' pour qu'ils soient retraités automatiquement.
+    At worker startup, any job left in 'processing' status signals an
+    abnormal stop (crash, container restart) during processing. Temporary
+    audio is only deleted once processing finishes (success or failure),
+    so it is most likely still present: such jobs are put back in
+    'pending' so they get processed again automatically.
     """
     stale_jobs = session.exec(
         select(TranscriptionJob).where(TranscriptionJob.status == JobStatus.processing)
@@ -208,7 +208,7 @@ def recover_stale_processing_jobs(session: Session) -> None:
         audio_path = _resolve_audio_path(job)
         if audio_path:
             logger.warning(
-                "Job %s trouvé bloqué en 'processing' au démarrage : remise en file d'attente.",
+                "Job %s found stuck in 'processing' at startup: re-queued.",
                 job.id,
             )
             job.status = JobStatus.pending
@@ -216,7 +216,7 @@ def recover_stale_processing_jobs(session: Session) -> None:
             job.progress = 0
         else:
             logger.warning(
-                "Job %s bloqué en 'processing' mais audio introuvable : marqué en erreur.",
+                "Job %s stuck in 'processing' but audio missing: marked as error.",
                 job.id,
             )
             job.status = JobStatus.error
@@ -227,7 +227,7 @@ def recover_stale_processing_jobs(session: Session) -> None:
 
 
 def _is_cancel_requested(session: Session, job_id: int) -> bool:
-    """Relit le fanion d'annulation depuis la base (posé par l'API)."""
+    """Re-reads the cancellation flag from the database (set by the API)."""
     row = session.exec(
         select(TranscriptionJob.cancel_requested).where(TranscriptionJob.id == job_id)
     ).first()
@@ -235,7 +235,7 @@ def _is_cancel_requested(session: Session, job_id: int) -> bool:
 
 
 def process_pending_job(session: Session) -> bool:
-    """Traite un seul job en attente. Retourne True si un job a été traité."""
+    """Processes a single pending job. Returns True if a job was processed."""
     job = session.exec(
         select(TranscriptionJob)
         .where(TranscriptionJob.status == JobStatus.pending)
@@ -252,7 +252,7 @@ def process_pending_job(session: Session) -> bool:
     session.add(job)
     session.commit()
 
-    # Annulation demandée pendant que le job était en file.
+    # Cancellation requested while the job was queued.
     if _is_cancel_requested(session, job.id):
         job.status = JobStatus.cancelled
         job.error_message = None
@@ -262,7 +262,7 @@ def process_pending_job(session: Session) -> bool:
         job.audio_tmp_filename = None
         session.add(job)
         session.commit()
-        logger.info("Job %s annulé par l'utilisateur avant traitement.", job.id)
+        logger.info("Job %s cancelled by the user before processing.", job.id)
         return True
 
     last_cancel_check = time.monotonic()
@@ -274,13 +274,13 @@ def process_pending_job(session: Session) -> bool:
         model = _get_whisper_model(job.model_used)
         segments_iter, info = model.transcribe(audio_path, language="fr")
 
-        # Dénominateur de la progression : durée mesurée par Whisper, à défaut
-        # celle mesurée par ffprobe à l'upload.
+        # Progress denominator: duration measured by Whisper, or the
+        # ffprobe duration from upload time as a fallback.
         duration = getattr(info, "duration", None) or job.audio_duration_seconds
 
-        # segments est un générateur consommé au fil du décodage : itérer
-        # incrémentalement permet de suivre la progression et de détecter une
-        # annulation sans attendre la fin du fichier.
+        # segments is a generator consumed as decoding progresses: iterating
+        # incrementally allows tracking progress and detecting cancellation
+        # without waiting for the end of the file.
         segments = []
         last_commit_percent = 0
         last_commit_at = time.monotonic()
@@ -304,8 +304,8 @@ def process_pending_job(session: Session) -> bool:
                 last_commit_percent = percent
                 last_commit_at = now
 
-        # Le nettoyage/post-traitement du texte (espaces, ponctuation,
-        # majuscules) est appliqué segment par segment dans segments_to_vtt.
+        # Text cleanup/post-processing (spaces, punctuation, capitals) is
+        # applied segment by segment inside segments_to_vtt.
         vtt_content = segments_to_vtt(segments)
 
         os.makedirs(settings.transcripts_path, exist_ok=True)
@@ -317,21 +317,21 @@ def process_pending_job(session: Session) -> bool:
         job.status = JobStatus.done
         job.progress = 100
         job.finished_at = datetime.utcnow()
-        logger.info("Job %s terminé avec succès.", job.id)
+        logger.info("Job %s completed successfully.", job.id)
 
     except JobCancelled:
-        logger.info("Job %s annulé par l'utilisateur.", job.id)
+        logger.info("Job %s cancelled by the user.", job.id)
         job.status = JobStatus.cancelled
         job.error_message = None
         job.finished_at = datetime.utcnow()
     except Exception as exc:  # noqa: BLE001
-        logger.exception("Erreur lors du traitement du job %s", job.id)
+        logger.exception("Error while processing job %s", job.id)
         job.status = JobStatus.error
         job.error_message = str(exc)
         job.finished_at = datetime.utcnow()
 
     finally:
-        # L'audio source n'est jamais conservé, succès, échec ou annulation.
+        # The source audio is never kept, whatever the outcome.
         if audio_path and os.path.exists(audio_path):
             os.remove(audio_path)
         job.audio_tmp_filename = None
@@ -342,7 +342,7 @@ def process_pending_job(session: Session) -> bool:
 
 
 def process_pending_model_downloads(session: Session) -> None:
-    """Télécharge les modèles marqués 'downloading' par l'admin via l'API."""
+    """Downloads models marked 'downloading' by the admin through the API."""
     from faster_whisper import WhisperModel as FasterWhisperModel
 
     pending_models = session.exec(
@@ -350,19 +350,19 @@ def process_pending_model_downloads(session: Session) -> None:
     ).all()
 
     for model in pending_models:
-        logger.info("Téléchargement du modèle '%s'...", model.name)
-        # Réinitialise la progression avant de démarrer (le callback écrit
-        # via une session séparée, celle-ci ne verrait pas ses valeurs).
+        logger.info("Downloading model '%s'...", model.name)
+        # Reset progress before starting (the callback writes through a
+        # separate session, this one would not see its values).
         model.download_progress = 0
         session.add(model)
         session.commit()
 
         state = _DownloadProgressState(model.id)
         try:
-            # Téléchargement explicite avec remontée de progression, puis
-            # construction du modèle (cache hit, aucun re-téléchargement).
-            # Repo et patterns suivent la convention faster-whisper
-            # (Systran/faster-whisper-<name>) pour partager le même cache.
+            # Explicit download with progress reporting, then model
+            # construction (cache hit, no re-download). Repo and patterns
+            # follow the faster-whisper convention (Systran/faster-whisper-<name>)
+            # to share the same cache.
             snapshot_download(
                 repo_id=f"Systran/faster-whisper-{model.name}",
                 cache_dir=settings.whisper_models_path,
@@ -386,9 +386,9 @@ def process_pending_model_downloads(session: Session) -> None:
             model.download_progress = 100
             model.disk_size_mb = _compute_model_disk_size_mb(model.name)
             model.error_message = None
-            logger.info("Modèle '%s' téléchargé.", model.name)
+            logger.info("Model '%s' downloaded.", model.name)
         except Exception as exc:  # noqa: BLE001
-            logger.exception("Échec du téléchargement du modèle '%s'", model.name)
+            logger.exception("Model '%s' download failed", model.name)
             model.status = ModelStatus.error
             model.download_progress = None
             model.error_message = str(exc)
@@ -399,24 +399,24 @@ def process_pending_model_downloads(session: Session) -> None:
 
 def process_pending_model_deletions(session: Session) -> None:
     """
-    Supprime physiquement les fichiers d'un modèle repassé à 'not_downloaded'
-    côté API alors qu'il existe encore sur disque.
-    Convention faster-whisper : dossier models--<org>--faster-whisper-<name>
-    sous whisper_models_path (cache huggingface_hub).
+    Physically deletes the files of a model switched back to 'not_downloaded'
+    on the API side while it still exists on disk.
+    faster-whisper convention: models--<org>--faster-whisper-<name>
+    directory under whisper_models_path (huggingface_hub cache).
     """
     models = session.exec(select(WhisperModel).where(WhisperModel.status == ModelStatus.not_downloaded)).all()
     for model in models:
         pattern = os.path.join(settings.whisper_models_path, f"*{model.name}*")
         for path in glob.glob(pattern):
             if os.path.isdir(path):
-                logger.info("Suppression du modèle sur disque : %s", path)
+                logger.info("Deleting model from disk: %s", path)
                 shutil.rmtree(path, ignore_errors=True)
 
 
-# Colonnes apparues après le schéma initial : create_all ne fait pas d'ALTER
-# TABLE sur une base existante. Le backend applique le même correctif à son
-# démarrage ; ce filet de sécurité couvre le cas où le worker démarrerait
-# avant la migration backend. À maintenir en cohérence avec
+# Columns added after the initial schema: create_all does not run ALTER
+# TABLE on an existing database. The backend applies the same patch at
+# its startup; this safety net covers the case where the worker starts
+# before the backend migration. Keep in sync with
 # backend/app/core/database.py.
 _SCHEMA_PATCHES = {
     "transcriptionjob": {
@@ -448,7 +448,7 @@ def _ensure_schema_upgrades() -> None:
 
 
 def main_loop() -> None:
-    logger.info("Worker de transcription démarré. Polling toutes les %ss.", settings.poll_interval_seconds)
+    logger.info("Transcription worker started. Polling every %ss.", settings.poll_interval_seconds)
 
     _ensure_schema_upgrades()
 
@@ -457,7 +457,7 @@ def main_loop() -> None:
             backfill_model_disk_sizes(startup_session)
             recover_stale_processing_jobs(startup_session)
         except Exception:  # noqa: BLE001
-            logger.exception("Erreur lors de la reprise des jobs bloqués au démarrage")
+            logger.exception("Error while recovering stuck jobs at startup")
 
     consecutive_errors = 0
     max_backoff_seconds = 60
@@ -470,16 +470,16 @@ def main_loop() -> None:
                 processed = process_pending_job(session)
                 consecutive_errors = 0
             except Exception:  # noqa: BLE001
-                logger.exception("Erreur inattendue dans la boucle principale du worker")
+                logger.exception("Unexpected error in the worker main loop")
                 processed = False
                 consecutive_errors += 1
 
         if consecutive_errors > 0:
-            # Backoff exponentiel plafonné, pour éviter une boucle de crash
-            # trop agressive en cas de problème persistant (ex: base
-            # inaccessible temporairement).
+            # Exponential backoff with a cap, to avoid an overly aggressive
+            # crash loop on persistent issues (e.g. a temporarily
+            # unavailable database).
             backoff = min(settings.poll_interval_seconds * (2 ** consecutive_errors), max_backoff_seconds)
-            logger.warning("Pause de %ss après %s erreur(s) consécutive(s).", backoff, consecutive_errors)
+            logger.warning("Pausing %ss after %s consecutive error(s).", backoff, consecutive_errors)
             time.sleep(backoff)
         elif not processed:
             time.sleep(settings.poll_interval_seconds)

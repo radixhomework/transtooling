@@ -1,14 +1,14 @@
 """
-Modèles SQLModel du worker.
+SQLModel models for the worker.
 
-NOTE IMPORTANTE : backend et worker sont deux images Docker distinctes et ne
-partagent pas de code Python directement. Ces définitions doivent donc rester
-identiques à celles de backend/app/models/*.py (même table, même colonnes)
-puisqu'elles pointent vers la même base SQLite via un volume partagé.
+IMPORTANT NOTE: backend and worker are two distinct Docker images and do
+not share Python code directly. These definitions must therefore stay
+identical to backend/app/models/*.py (same table, same columns) since they
+target the same SQLite database through a shared volume.
 
-Piste d'amélioration future : extraire ces modèles dans un package Python
-partagé (ex. dossier "shared/") monté/installé dans les deux images, pour
-éviter la duplication manuelle.
+Future improvement idea: extract these models into a shared Python package
+(e.g. a "shared/" folder) mounted/installed in both images, to avoid the
+manual duplication.
 """
 
 from datetime import datetime

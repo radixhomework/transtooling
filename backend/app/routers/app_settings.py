@@ -13,8 +13,8 @@ router = APIRouter(prefix="/api/admin/settings", tags=["admin-settings"])
 def _get_settings_row(session: Session) -> AppSettings:
     settings_row = session.get(AppSettings, 1)
     if not settings_row:
-        # Filet de sécurité : ne devrait pas arriver car _ensure_app_settings()
-        # est appelé au démarrage de l'application.
+        # Safety net: should not happen since _ensure_app_settings() runs
+        # at application startup.
         raise HTTPException(status_code=500, detail="Paramètres applicatifs non initialisés")
     return settings_row
 
@@ -28,7 +28,7 @@ def get_settings(
 
 
 def _normalize_extensions(raw: str) -> str:
-    """Normalise la liste d'extensions : « json, HTML, .htm » → « json,html,htm »."""
+    """Normalizes the extension list: "json, HTML, .htm" -> "json,html,htm"."""
     parts = [p.strip().lstrip(".").lower() for p in raw.split(",")]
     parts = [p for p in parts if p]
     return ",".join(parts)
