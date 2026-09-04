@@ -1,0 +1,292 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-03T00:00:00Z",
+  "title": "Design System: TransTooLing",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Vert mousse",
+        "canonical": "#4D5947",
+        "tonalRamp": [
+          "#232921",
+          "#333B2F",
+          "#3F4A3B",
+          "#4D5947",
+          "#677361",
+          "#8B9686",
+          "#B4BCB0",
+          "#DDE2DA"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Vert mousse profond",
+        "canonical": "#3F4A3B"
+      },
+      "accent-soft": {
+        "role": "primary",
+        "displayName": "Vert mousse voile",
+        "canonical": "#e3e7dd"
+      },
+      "copper": {
+        "role": "secondary",
+        "displayName": "Cuivre patiné",
+        "canonical": "#9A7656",
+        "tonalRamp": [
+          "#4A3827",
+          "#5F4934",
+          "#77603F",
+          "#9A7656",
+          "#AF8D70",
+          "#C4A78D",
+          "#D9C3AC",
+          "#EFE6DC"
+        ]
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Papier",
+        "canonical": "#fcfcfa",
+        "tonalRamp": [
+          "#8F8C86",
+          "#A5A29C",
+          "#BBB9B3",
+          "#D1CFC9",
+          "#E4E2DD",
+          "#EFEDE8",
+          "#FCFCFA",
+          "#FEFEFD"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Ivoire",
+        "canonical": "#fdfaf3"
+      },
+      "surface-sunken": {
+        "role": "neutral",
+        "displayName": "Parchemin demi-teinte",
+        "canonical": "#eae5d8"
+      },
+      "parchment": {
+        "role": "neutral",
+        "displayName": "Parchemin",
+        "canonical": "#d8d0bd"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Noir racine",
+        "canonical": "#1E211C",
+        "tonalRamp": [
+          "#0D0F0C",
+          "#171A15",
+          "#1E211C",
+          "#363A34",
+          "#565B53",
+          "#7A8078",
+          "#A3A89F",
+          "#D1D4CE"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Brun terre",
+        "canonical": "#76604E",
+        "tonalRamp": [
+          "#3A2F24",
+          "#4C3E30",
+          "#5F4E3C",
+          "#76604E",
+          "#8F7A66",
+          "#A99482",
+          "#C4B29F",
+          "#E0D3C3"
+        ]
+      },
+      "status-error": {
+        "role": "tertiary",
+        "displayName": "Rose fané",
+        "canonical": "#8A5E61",
+        "tonalRamp": [
+          "#452F31",
+          "#5C3F42",
+          "#724F52",
+          "#8A5E61",
+          "#A17C7E",
+          "#BA9A9C",
+          "#D3B8B9",
+          "#EFE1E0"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Cormorant (titres)",
+        "purpose": "Titres de page et marque, en capitales espacées."
+      },
+      "body": {
+        "displayName": "Source Sans 3 (corps)",
+        "purpose": "Phrases, descriptions, formulaires ; boutons et navigation en capitales espacées."
+      },
+      "label": {
+        "displayName": "IBM Plex Mono (données)",
+        "purpose": "Valeurs techniques : badges, identifiants, tailles, dates."
+      }
+    },
+    "shadows": [
+      {
+        "name": "none",
+        "value": "none",
+        "purpose": "Charte radixhomework : aucune ombre dans tout le système ; profondeur par tons (papier/ivoire/parchemin) et bordures fines."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-color",
+        "value": "0.2s ease",
+        "purpose": "Transitions de couleur (fond/bord/texte) des états — survol, navigation, boutons."
+      },
+      {
+        "name": "progress-scale",
+        "value": "0.4s ease",
+        "purpose": "scaleX du remplissage des barres de progression, sans reflow."
+      },
+      {
+        "name": "waveform-bounce",
+        "value": "0.9s ease-in-out infinite",
+        "purpose": "Pulsation des barres de la forme d'onde, unique indicateur animé de traitement. Désactivée sous prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "nav-wrap",
+        "value": "720px",
+        "purpose": "En-tête enveloppé, navigation en défilement horizontal."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Bouton primaire",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "L'action principale d'une vue : vert mousse plein, capitales espacées, unique par écran.",
+      "html": "<button class=\"ds-btn-primary\">Traduire</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; border-radius: 0; padding: 9px 16px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-family: var(--font-ui, sans-serif); cursor: pointer; background: var(--color-accent, #4D5947); color: var(--color-surface, #fdfaf3); transition: background-color 0.2s ease, opacity 0.2s ease; } .ds-btn-primary:hover { background: var(--color-accent-hover, #3F4A3B); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-accent, #4D5947); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Bouton secondaire",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Actions neutres : transparent, bord noir racine 40 %, survol vert mousse.",
+      "html": "<button class=\"ds-btn-secondary\">Annuler</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--color-border-strong, rgba(30,33,28,0.4)); border-radius: 0; padding: 9px 16px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-family: var(--font-ui, sans-serif); cursor: pointer; background: transparent; color: var(--color-ink, #1E211C); transition: border-color 0.2s ease, color 0.2s ease; } .ds-btn-secondary:hover { border-color: var(--color-accent, #4D5947); color: var(--color-accent, #4D5947); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--color-accent, #4D5947); outline-offset: 2px; }"
+    },
+    {
+      "name": "Bouton danger",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destruction : bord et texte rose fané, fond voilé au survol.",
+      "html": "<button class=\"ds-btn-danger\">Supprimer</button>",
+      "css": ".ds-btn-danger { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--color-status-error, #8A5E61); border-radius: 0; padding: 9px 16px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-family: var(--font-ui, sans-serif); cursor: pointer; background: transparent; color: var(--color-status-error, #8A5E61); transition: background-color 0.2s ease; } .ds-btn-danger:hover { background: var(--color-status-error-soft, #efe1e0); } .ds-btn-danger:focus-visible { outline: 2px solid var(--color-accent, #4D5947); outline-offset: 2px; }"
+    },
+    {
+      "name": "Badge de statut",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Étiquette carrée mono capitales ; fond voilé + texte coloré selon l'état.",
+      "html": "<span class=\"ds-badge\">Terminée</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 0; font-family: var(--font-mono, monospace); font-size: 0.68rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; background: var(--color-status-done-soft, #e3e7dd); color: var(--color-status-done, #4D5947); }"
+    },
+    {
+      "name": "Carte",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Conteneur ivoire sur papier, bord noir racine 20 %, aucune ombre.",
+      "html": "<div class=\"ds-card\">Carte de l'atelier</div>",
+      "css": ".ds-card { background: var(--color-surface, #fdfaf3); border: 1px solid var(--color-border, rgba(30,33,28,0.2)); border-radius: 0; box-shadow: none; padding: 20px; color: var(--color-ink, #1E211C); font-family: var(--font-ui, sans-serif); font-size: 0.95rem; }"
+    },
+    {
+      "name": "Champ de saisie",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Champ ivoire, bord noir racine 40 %, focus par bord vert mousse.",
+      "html": "<input class=\"ds-input\" placeholder=\"Identifiant\" />",
+      "css": ".ds-input { padding: 10px 12px; border: 1px solid var(--color-border-strong, rgba(30,33,28,0.4)); border-radius: 0; font-size: 0.95rem; font-family: var(--font-ui, sans-serif); background: var(--color-surface, #fdfaf3); color: var(--color-ink, #1E211C); } .ds-input:focus { border-color: var(--color-accent, #4D5947); outline: none; }"
+    },
+    {
+      "name": "Lien de navigation",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Capitales espacées ; vert mousse au survol, soulignement bas à l'état actif.",
+      "html": "<a class=\"ds-nav-link is-active\">Transcription</a>",
+      "css": ".ds-nav-link { color: var(--color-ink, #1E211C); text-decoration: none; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 8px 2px; border-bottom: 1px solid transparent; transition: color 0.2s ease, border-color 0.2s ease; } .ds-nav-link:hover { color: var(--color-accent, #4D5947); } .ds-nav-link.is-active { color: var(--color-accent, #4D5947); border-bottom-color: var(--color-accent, #4D5947); }"
+    },
+    {
+      "name": "Marque avec logo",
+      "kind": "custom",
+      "refersTo": "brand",
+      "description": "Emblème logo + TRANSTOOLING en Cormorant capitales espacées.",
+      "html": "<span class=\"ds-brand\"><img class=\"ds-brand-logo\" src=\"/logo-96.png\" alt=\"\" /><span class=\"ds-brand-name\">TransTooLing</span></span>",
+      "css": ".ds-brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display, serif); font-weight: 600; font-size: 1.15rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink, #1E211C); } .ds-brand-logo { display: block; width: 34px; height: 34px; }"
+    },
+    {
+      "name": "Forme d'onde",
+      "kind": "custom",
+      "refersTo": "waveform",
+      "description": "Signature : cinq barres vert mousse qui pulsent — unique indicateur animé de traitement.",
+      "html": "<div class=\"ds-waveform\" aria-hidden=\"true\"><span></span><span></span><span></span><span></span><span></span></div>",
+      "css": ".ds-waveform { display: inline-flex; align-items: center; gap: 3px; height: 20px; } .ds-waveform span { display: block; width: 3px; border-radius: 2px; background: var(--color-accent, #4D5947); animation: ds-bounce 0.9s ease-in-out infinite; } .ds-waveform span:nth-child(2) { animation-delay: 0.12s; } .ds-waveform span:nth-child(3) { animation-delay: 0.24s; } .ds-waveform span:nth-child(4) { animation-delay: 0.36s; } .ds-waveform span:nth-child(5) { animation-delay: 0.48s; } @keyframes ds-bounce { 0%, 100% { height: 30%; } 50% { height: 100%; } }"
+    },
+    {
+      "name": "Barre de progression",
+      "kind": "custom",
+      "refersTo": "progress",
+      "description": "Piste parchemin demi-teinte, remplissage vert mousse en scaleX (0,4 s, sans reflow).",
+      "html": "<div class=\"ds-progress\"><div class=\"ds-progress-fill\" style=\"--progress: 0.42\"></div></div>",
+      "css": ".ds-progress { height: 6px; background: var(--color-surface-sunken, #eae5d8); overflow: hidden; } .ds-progress-fill { height: 100%; background: var(--color-accent, #4D5947); transform-origin: left center; transform: scaleX(var(--progress, 0)); transition: transform 0.4s ease; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "L'atelier qui prend racine",
+    "overview": "TransTooLing adopte la charte éditoriale de radixhomework.github.io : un atelier personnel aux couleurs de terre — noir racine, ivoire, vert mousse, cuivre patiné — posé sur des surfaces de papier chaud. La typographie mène : Cormorant Garamond porte les titres en capitales espacées, comme le fronton d'un atelier ; Source Sans 3 porte les phrases ; IBM Plex Mono reste la voix discrète des données. Le logo — emblème sombre cerclé — remplace l'ancienne marque à barres dans l'en-tête, la page de connexion et le favicon. Le langage est éditorial et plat : angles droits partout, aucune ombre, des bordures fines noir racine semi-transparentes pour séparer les surfaces.",
+    "keyCharacteristics": [
+      "Charte radixhomework : noir racine, ivoire, vert mousse, cuivre patiné, rose fané, parchemin",
+      "Cormorant Garamond en capitales espacées pour titres, marque et navigation ; Source Sans 3 pour le corps",
+      "Angles droits partout, aucune ombre : la séparation se fait par bordures fines",
+      "Logo emblème dans l'en-tête, la connexion et le favicon",
+      "IBM Plex Mono reste la voix des données ; la forme d'onde reste l'indicateur de traitement"
+    ],
+    "rules": [
+      {
+        "name": "La règle de la couleur rare",
+        "body": "Le vert mousse couvre au plus ~10 % d'un écran ; le cuivre et le rose fané ne sont que des états. Rien de décoratif.",
+        "section": "colors"
+      },
+      {
+        "name": "La règle des deux voix",
+        "body": "Toute valeur mesurable ou technique (nom de modèle, identifiant, timestamp, taille) passe en IBM Plex Mono ; toute phrase passe en Source Sans 3. Jamais l'inverse.",
+        "section": "typography"
+      },
+      {
+        "name": "La règle du plat absolu",
+        "body": "Interdiction d'ajouter une ombre, un dégradé d'état ou une élévation ; les états passent par la couleur (bord, texte, fond voilé), toujours en 0,2 s.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do garder le vert mousse minoritaire : actions, actif, terminé.",
+      "Do passer toute donnée technique en IBM Plex Mono (règle des deux voix).",
+      "Do séparer les surfaces par des bordures fines noir racine semi-transparentes, jamais par des ombres.",
+      "Do utiliser le Cormorant en capitales espacées pour titres, marque et navigation — c'est le fronton de la charte.",
+      "Do utiliser la forme d'onde comme unique indicateur d'attente animée."
+    ],
+    "donts": [
+      "Don't introduire une ombre, un dégradé, un arrondi ou une deuxième couleur d'expression.",
+      "Don't mettre du texte long en IBM Plex Mono — le mono est réservé aux valeurs courtes.",
+      "Don't réintroduire les pastilles de fond dans la navigation ou des pilules de badge.",
+      "Don't animer autre chose que la forme d'onde, le scaleX des barres de progression et les transitions de couleur de 0,2 s."
+    ]
+  }
+}

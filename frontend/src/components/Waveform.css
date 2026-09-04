@@ -1,0 +1,42 @@
+.waveform {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+}
+
+.waveform-bar {
+  display: block;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  height: 30%;
+}
+
+.waveform.is-active .waveform-bar {
+  animation: waveform-bounce 0.9s ease-in-out infinite;
+}
+
+.waveform-sm {
+  height: 14px;
+}
+.waveform-sm .waveform-bar {
+  width: 2px;
+}
+
+.waveform-lg {
+  height: 32px;
+}
+.waveform-lg .waveform-bar {
+  width: 4px;
+}
+
+@keyframes waveform-bounce {
+  0%,
+  100% {
+    height: 25%;
+  }
+  50% {
+    height: 100%;
+  }
+}

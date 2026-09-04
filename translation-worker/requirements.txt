@@ -1,0 +1,5 @@
+sqlmodel==0.0.22
+ctranslate2==4.8.1
+sentencepiece>=0.2.0
+huggingface-hub>=0.34.0
+pydantic-settings==2.5.2

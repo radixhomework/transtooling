@@ -1,0 +1,47 @@
+.account-page {
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.account-page h1 {
+  font-size: 1.85rem;
+}
+
+.account-info {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account-info > div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.account-info-label {
+  color: var(--color-ink-faint);
+}
+
+.account-form-card {
+  padding: 24px;
+}
+
+.account-form-card h2 {
+  font-size: 1.05rem;
+  margin-bottom: 16px;
+}
+
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.success-text {
+  color: var(--color-status-done);
+  font-size: 0.85rem;
+}

@@ -1,0 +1,22 @@
+# Environnement
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Node / frontend
+node_modules/
+dist/
+
+# Données locales (si montées en bind mount pour du dev)
+data/
+audio_tmp/
+transcripts/
+models/
+
+# OS / éditeurs
+.DS_Store
+.vscode/
+.idea/

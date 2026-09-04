@@ -1,0 +1,174 @@
+.translation-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.translation-header h1 {
+  font-size: 1.85rem;
+}
+
+.translation-header p {
+  margin-top: 6px;
+}
+
+.translation-form {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.translation-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-md);
+  width: fit-content;
+}
+
+.translation-tab {
+  border: none;
+  background: none;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+}
+
+.translation-tab.is-active {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-card);
+}
+
+.direction-field {
+  max-width: 320px;
+}
+
+.direction-field select {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.direction-field select:focus {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+.translation-text-form,
+.translation-archive-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.translation-text-form textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  resize: vertical;
+}
+
+.translation-text-form textarea:focus {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+.translation-archive-hint {
+  font-size: 0.8rem;
+  color: var(--color-ink-faint);
+}
+
+.translation-jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.translation-job-card {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.translation-job-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.translation-job-direction {
+  font-size: 0.8rem;
+  color: var(--color-ink-soft);
+}
+
+.translation-job-date {
+  font-size: 0.78rem;
+  color: var(--color-ink-faint);
+}
+
+.translation-job-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.translation-processing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+
+.translation-result-text {
+  margin: 0;
+  padding: 14px;
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.translation-truncated {
+  font-size: 0.78rem;
+  color: var(--color-ink-faint);
+}
+
+.translation-report p {
+  font-size: 0.88rem;
+}
+
+.translation-report-details summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+
+.translation-report-details ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  font-size: 0.8rem;
+  color: var(--color-ink-soft);
+}

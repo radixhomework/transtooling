@@ -1,0 +1,318 @@
+/* Polices embarquées localement (latin + latin-ext) : aucune requête
+   externe, cohérent avec le traitement 100 % local du produit. */
+@import "./fonts.css";
+
+:root {
+  /* --- Couleurs (charte radixhomework.github.io) --- */
+  --color-bg: #fcfcfa;
+  --color-surface: #fdfaf3; /* ivoire */
+  --color-surface-sunken: #eae5d8; /* parchemin à demi-teinte */
+  --color-parchment: #d8d0bd;
+
+  --color-ink: #1e211c; /* noir racine */
+  --color-ink-soft: #76604e; /* brun terre */
+  --color-ink-faint: #a18f7c;
+
+  --color-border: rgba(30, 33, 28, 0.2);
+  --color-border-strong: rgba(30, 33, 28, 0.4);
+
+  --color-accent: #4d5947; /* vert mousse */
+  --color-accent-hover: #3f4a3b;
+  --color-accent-soft: #e3e7dd;
+
+  --color-copper: #9a7656; /* cuivre patiné : accent secondaire */
+  --color-copper-soft: #efe6dc;
+
+  --color-status-pending: #9a7656;
+  --color-status-pending-soft: #efe6dc;
+  --color-status-done: #4d5947;
+  --color-status-done-soft: #e3e7dd;
+  --color-status-error: #8a5e61; /* rose fané */
+  --color-status-error-soft: #efe1e0;
+
+  /* --- Typographie --- */
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-ui: "Source Sans 3", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+
+  /* --- Espacement / forme (langage éditorial : angles droits) --- */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --shadow-card: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+}
+
+p {
+  margin: 0;
+  color: var(--color-ink-soft);
+  line-height: 1.6;
+}
+
+button {
+  font-family: var(--font-ui);
+}
+
+input,
+select,
+textarea {
+  font-family: var(--font-ui);
+}
+
+code,
+.mono {
+  font-family: var(--font-mono);
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--color-copper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --- Primitives réutilisables --- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-surface);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.btn-secondary {
+  background: transparent;
+  border-color: var(--color-border-strong);
+  color: var(--color-ink);
+}
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.btn-danger {
+  background: transparent;
+  border-color: var(--color-status-error);
+  color: var(--color-status-error);
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-status-error-soft);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.72rem;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+}
+
+.field input,
+.field select,
+.field textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--color-accent);
+}
+
+.error-text {
+  color: var(--color-status-error);
+  font-size: 0.85rem;
+}
+
+.success-text {
+  color: var(--color-accent);
+  font-size: 0.85rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border: 1px solid transparent;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge-pending {
+  background: var(--color-status-pending-soft);
+  color: var(--color-status-pending);
+}
+.badge-processing {
+  background: var(--color-status-pending-soft);
+  color: var(--color-status-pending);
+}
+.badge-cancelling {
+  background: var(--color-status-pending-soft);
+  color: var(--color-status-pending);
+}
+.badge-done {
+  background: var(--color-status-done-soft);
+  color: var(--color-status-done);
+}
+.badge-error {
+  background: var(--color-status-error-soft);
+  color: var(--color-status-error);
+}
+.badge-cancelled {
+  background: var(--color-surface-sunken);
+  color: var(--color-ink-soft);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-soft);
+  font-weight: 600;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--color-ink-faint);
+}
+
+/* Barre de progression (transcription en cours) */
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: var(--color-surface-sunken);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  transform-origin: left center;
+  /* scaleX (et non width) : composition animée sans reflow, la progression
+     attendue est posée en variable par le composant (0 → 1). */
+  transform: scaleX(var(--progress, 0));
+  transition: transform 0.4s ease;
+}
+
+.progress-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-ink-soft);
+}

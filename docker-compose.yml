@@ -1,0 +1,116 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: transcription-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - SQLITE_PATH=${SQLITE_PATH:-/data/app.db}
+      - AUDIO_TMP_PATH=${AUDIO_TMP_PATH:-/audio_tmp}
+      - TRANSCRIPTS_PATH=${TRANSCRIPTS_PATH:-/transcripts}
+      - WHISPER_MODELS_PATH=${WHISPER_MODELS_PATH:-/models}
+      - TRANSLATION_TMP_PATH=${TRANSLATION_TMP_PATH:-/translation_tmp}
+      - TRANSLATIONS_PATH=${TRANSLATIONS_PATH:-/translations}
+    volumes:
+      - db_data:/data
+      - audio_tmp:/audio_tmp
+      - transcripts_data:/transcripts
+      - whisper_models_data:/models
+      - translation_tmp:/translation_tmp
+      - translations_data:/translations
+    expose:
+      - "8000"
+    networks:
+      - internal_net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  transcription-worker:
+    build:
+      context: ./worker
+    container_name: transcription-worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - SQLITE_PATH=${SQLITE_PATH:-/data/app.db}
+      - AUDIO_TMP_PATH=${AUDIO_TMP_PATH:-/audio_tmp}
+      - TRANSCRIPTS_PATH=${TRANSCRIPTS_PATH:-/transcripts}
+      - WHISPER_MODELS_PATH=${WHISPER_MODELS_PATH:-/models}
+    volumes:
+      - db_data:/data
+      - audio_tmp:/audio_tmp
+      - transcripts_data:/transcripts
+      - whisper_models_data:/models
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - internal_net
+    # Un seul job traité à la fois : pas de scale > 1 sur ce service.
+
+  translation-worker:
+    build:
+      context: ./translation-worker
+    container_name: transcription-translation-worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - SQLITE_PATH=${SQLITE_PATH:-/data/app.db}
+      - TRANSLATION_MODELS_PATH=${TRANSLATION_MODELS_PATH:-/translation_models}
+      - TRANSLATION_TMP_PATH=${TRANSLATION_TMP_PATH:-/translation_tmp}
+      - TRANSLATIONS_PATH=${TRANSLATIONS_PATH:-/translations}
+    volumes:
+      - db_data:/data
+      - translation_tmp:/translation_tmp
+      - translations_data:/translations
+      - translation_models_data:/translation_models
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - internal_net
+    # Worker séquentiel indépendant du worker de transcription : pas de
+    # scale > 1 sur ce service.
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_BASE_URL=/api
+    container_name: transcription-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    # Exposé uniquement sur localhost (127.0.0.1) : seul le reverse proxy
+    # Apache, exécuté sur la même machine, doit pouvoir y accéder. Le port
+    # hôte est configurable via FRONTEND_HOST_PORT dans .env (défaut 8080),
+    # et doit correspondre à la valeur utilisée dans
+    # reverse-proxy/apache-transcription.conf (directive ProxyPass).
+    ports:
+      - "127.0.0.1:${FRONTEND_HOST_PORT:-8080}:80"
+    networks:
+      - internal_net
+
+networks:
+  internal_net:
+    driver: bridge
+
+volumes:
+  db_data:
+  audio_tmp:
+  transcripts_data:
+  whisper_models_data:
+  translation_models_data:
+  translation_tmp:
+  translations_data:
