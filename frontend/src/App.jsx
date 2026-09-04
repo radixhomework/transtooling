@@ -6,9 +6,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import TranslationPage from "./pages/TranslationPage.jsx";
 import AccountPage from "./pages/AccountPage.jsx";
-import AdminUsersPage from "./pages/AdminUsersPage.jsx";
-import AdminModelsPage from "./pages/AdminModelsPage.jsx";
-import AdminSettingsPage from "./pages/AdminSettingsPage.jsx";
+import AdminPage from "./pages/AdminPage.jsx";
 
 export default function App() {
   return (
@@ -22,9 +20,11 @@ export default function App() {
           <Route path="/account" element={<AccountPage />} />
 
           <Route element={<RequireAdmin />}>
-            <Route path="/admin/users" element={<AdminUsersPage />} />
-            <Route path="/admin/models" element={<AdminModelsPage />} />
-            <Route path="/admin/settings" element={<AdminSettingsPage />} />
+            <Route path="/admin" element={<AdminPage />} />
+            {/* Anciennes routes : redirigées vers l'onglet correspondant */}
+            <Route path="/admin/users" element={<Navigate to="/admin" replace />} />
+            <Route path="/admin/models" element={<Navigate to="/admin" replace />} />
+            <Route path="/admin/settings" element={<Navigate to="/admin" replace />} />
           </Route>
         </Route>
       </Route>

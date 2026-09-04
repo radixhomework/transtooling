@@ -1,13 +1,13 @@
-.admin-page-header {
+.admin-users-toolbar {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
-  margin-bottom: 24px;
 }
 
-.admin-page-header h1 {
-  font-size: 1.85rem;
+.admin-section-desc {
+  font-size: 0.9rem;
+  color: var(--color-ink-soft);
 }
 
 .admin-page-header p {

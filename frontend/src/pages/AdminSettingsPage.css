@@ -1,9 +1,26 @@
 .settings-form {
   padding: 24px;
-  max-width: 480px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.settings-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.settings-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 800px) {
+  .settings-columns {
+    grid-template-columns: 1fr;
+  }
 }
 
 .settings-section-title {
@@ -16,6 +33,15 @@
 
 .settings-section-title:first-of-type {
   margin-top: 0;
+}
+
+.settings-subsection-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-faint);
+  margin-top: 4px;
 }
 
 .settings-field-hint {

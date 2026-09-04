@@ -19,7 +19,8 @@
     "models": "Modèles",
     "settings": "Paramètres",
     "logout": "Déconnexion",
-    "languageSwitch": "Langue"
+    "languageSwitch": "Langue",
+    "admin": "Administration"
   },
   "login": {
     "login": "Identifiant",
@@ -182,6 +183,12 @@
     "extensionsHint": "Les fichiers avec ces extensions sont traduits (JSON : valeurs de chaînes, clés préservées ; HTML : textes et attributs ; Markdown : syntaxe et chemins préservés). Les autres fichiers sont copiés tels quels.",
     "success": "Paramètres enregistrés.",
     "errorLoad": "Impossible de charger les paramètres.",
-    "errorSave": "Impossible d'enregistrer les paramètres. Vérifiez que les valeurs sont positives et qu'au moins une extension traduisible est définie."
+    "errorSave": "Impossible d'enregistrer les paramètres. Vérifiez que les valeurs sont positives et qu'au moins une extension traduisible est définie.",
+    "columnTranscription": "Transcription",
+    "columnTranslation": "Traduction"
+  },
+  "admin": {
+    "title": "Administration",
+    "subtitle": "Gérez les utilisateurs, les modèles et les paramètres de l'application."
   }
 }

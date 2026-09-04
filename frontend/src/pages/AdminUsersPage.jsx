@@ -112,11 +112,8 @@ export default function AdminUsersPage() {
 
   return (
     <div className="admin-users-page">
-      <div className="admin-page-header">
-        <div>
-          <h1>{t("adminUsers.title")}</h1>
-          <p>{t("adminUsers.subtitle")}</p>
-        </div>
+      <div className="admin-users-toolbar">
+        <p className="admin-section-desc">{t("adminUsers.subtitle")}</p>
         <button className="btn btn-primary" onClick={() => setShowCreateForm((v) => !v)}>
           {showCreateForm ? t("common.cancel") : t("adminUsers.add")}
         </button>

@@ -35,17 +35,9 @@ export default function Layout() {
               {t("nav.translation")}
             </NavLink>
             {user?.role === "admin" && (
-              <>
-                <NavLink to="/admin/users" className={({ isActive }) => (isActive ? "is-active" : "")}>
-                  {t("nav.users")}
-                </NavLink>
-                <NavLink to="/admin/models" className={({ isActive }) => (isActive ? "is-active" : "")}>
-                  {t("nav.models")}
-                </NavLink>
-                <NavLink to="/admin/settings" className={({ isActive }) => (isActive ? "is-active" : "")}>
-                  {t("nav.settings")}
-                </NavLink>
-              </>
+              <NavLink to="/admin" className={({ isActive }) => (isActive ? "is-active" : "")}>
+                {t("nav.admin")}
+              </NavLink>
             )}
           </nav>
 
