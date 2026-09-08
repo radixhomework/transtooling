@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../context/AuthContext.jsx";
-import * as authApi from "../api/auth";
+import { useAuth } from "../../viewmodels/AuthContext/AuthContext.jsx";
+import * as authApi from "../../models/auth";
 import "./AccountPage.css";
 
 export default function AccountPage() {

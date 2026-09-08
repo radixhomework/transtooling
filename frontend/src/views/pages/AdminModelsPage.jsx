@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as modelsApi from "../api/whisperModels";
-import * as translationApi from "../api/translation";
+import * as modelsApi from "../../models/whisperModels";
+import * as translationApi from "../../models/translation";
 import Waveform from "../components/Waveform.jsx";
 import "./AdminModelsPage.css";
 

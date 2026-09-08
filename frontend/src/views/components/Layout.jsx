@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../context/AuthContext.jsx";
-import { setLanguage } from "../i18n";
+import { useAuth } from "../../viewmodels/AuthContext/AuthContext.jsx";
+import { setLanguage } from "../../i18n";
 import "./Layout.css";
 
 export default function Layout() {

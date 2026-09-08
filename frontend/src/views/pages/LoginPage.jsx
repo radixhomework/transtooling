@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../context/AuthContext.jsx";
-import { setLanguage } from "../i18n";
+import { useAuth } from "../../viewmodels/AuthContext/AuthContext.jsx";
+import { setLanguage } from "../../i18n";
 import "./LoginPage.css";
 
 export default function LoginPage() {

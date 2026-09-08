@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as settingsApi from "../api/appSettings";
+import * as settingsApi from "../../models/appSettings";
 import "./AdminSettingsPage.css";
 
 export default function AdminSettingsPage() {

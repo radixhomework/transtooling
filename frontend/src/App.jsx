@@ -1,12 +1,12 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import RequireAuth from "./components/RequireAuth.jsx";
-import RequireAdmin from "./components/RequireAdmin.jsx";
-import Layout from "./components/Layout.jsx";
-import LoginPage from "./pages/LoginPage.jsx";
-import DashboardPage from "./pages/DashboardPage.jsx";
-import TranslationPage from "./pages/TranslationPage.jsx";
-import AccountPage from "./pages/AccountPage.jsx";
-import AdminPage from "./pages/AdminPage.jsx";
+import RequireAuth from "./views/components/RequireAuth.jsx";
+import RequireAdmin from "./views/components/RequireAdmin.jsx";
+import Layout from "./views/components/Layout.jsx";
+import LoginPage from "./views/pages/LoginPage.jsx";
+import DashboardPage from "./views/pages/DashboardPage.jsx";
+import TranslationPage from "./views/pages/TranslationPage.jsx";
+import AccountPage from "./views/pages/AccountPage.jsx";
+import AdminPage from "./views/pages/AdminPage.jsx";
 
 export default function App() {
   return (

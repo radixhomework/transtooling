@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as jobsApi from "../api/jobs";
-import * as modelsApi from "../api/whisperModels";
+import * as jobsApi from "../../models/jobs";
+import * as modelsApi from "../../models/whisperModels";
 import StatusBadge from "../components/StatusBadge.jsx";
 import Waveform from "../components/Waveform.jsx";
 import "./DashboardPage.css";

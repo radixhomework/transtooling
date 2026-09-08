@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as usersApi from "../api/users";
+import * as usersApi from "../../models/users";
 import "./AdminUsersPage.css";
 
 function emptyNewUser() {

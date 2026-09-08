@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as translationApi from "../api/translation";
+import * as translationApi from "../../models/translation";
 import StatusBadge from "../components/StatusBadge.jsx";
 import Waveform from "../components/Waveform.jsx";
 import "./TranslationPage.css";
