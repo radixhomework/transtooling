@@ -1,5 +1,20 @@
 # Backend — transcription API
 
+## Architecture (MVC)
+
+```
+app/
+├── controllers/     # HTTP boundary: routing, auth decorators, request parsing;
+│                    # no business logic (renamed from routers/)
+├── services/        # Business logic: validation, lifecycle rules, file handling
+├── models/          # SQLModel persistence entities
+├── schemas/         # Request/response DTOs per domain (Pydantic)
+└── core/            # Cross-cutting: config, database, security, rate limiting
+```
+
+Controllers delegate to services; services raise `HTTPException` for domain
+rule violations, keeping error responses FastAPI-native.
+
 ## Local development (outside Docker)
 
 ```bash

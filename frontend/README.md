@@ -10,14 +10,27 @@ messages returned by the backend API remain in French.
 
 ## Structure
 
+The frontend follows MVVM:
+
+- **Model** — `src/models/`: API clients (axios wrappers) per domain; the
+  data and the access to it.
+- **ViewModel** — `src/viewmodels/`: framework-independent state + behavior
+  per feature (`useTranscriptionViewModel`, `useTranslationViewModel`,
+  `useModelsAdminViewModel`, ...), plus `AuthContext` for session state.
+  Views bind to viewmodels through hooks; all business logic lives here.
+- **View** — `src/views/`: `pages/` (one per route) and `components/`
+  (Layout, route guards, badges, Waveform). Rendering only.
+
 ```
 src/
-├── api/            # Axios wrappers per domain (auth, jobs, users, ...)
+├── models/          # API clients per domain (auth, jobs, users, ...)
+├── viewmodels/      # Hooks holding state + actions; AuthContext
+├── views/
+│   ├── pages/       # One page per route
+│   └── components/  # Reusable components
 ├── assets/fonts/    # Embedded woff2 fonts (latin + latin-ext subsets)
-├── components/      # Reusable components (Layout, route guards, badges, Waveform)
-├── context/         # AuthContext (current user, login/logout)
-├── pages/           # One page per route
-└── styles/          # Design system (fonts.css, tokens.css: colors, typography, primitives)
+├── i18n/            # EN/FR translations
+└── styles/          # Design system (fonts.css, tokens.css)
 ```
 
 ## Pages
@@ -37,7 +50,7 @@ npm install
 npm run dev
 ```
 
-By default, the app calls `/api` (see `src/api/client.js`). In local dev
+By default, the app calls `/api` (see `src/models/client.js`). In local dev
 without a reverse proxy, set `VITE_API_BASE_URL` (e.g.
 `http://localhost:8000/api`) in a local `.env` file, or run through
 docker-compose to benefit from the internal Nginx proxy.
@@ -54,7 +67,7 @@ Generates `dist/`, then served by the `Dockerfile` (Nginx stage).
 
 - The access token (short-lived) and the refresh token are stored in
   `localStorage`.
-- `src/api/client.js` automatically intercepts `401` responses: it attempts
+- `src/models/client.js` automatically intercepts `401` responses: it attempts
   a refresh via `/api/auth/refresh`, replays the original request, and logs
   the user out (redirect to `/login`) if the refresh fails.
 
