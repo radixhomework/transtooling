@@ -1,5 +1,20 @@
 # Backend — transcription API
 
+## Architecture (MVC)
+
+```
+app/
+├── controllers/     # HTTP boundary: routing, auth decorators, request parsing;
+│                    # no business logic (renamed from routers/)
+├── services/        # Business logic: validation, lifecycle rules, file handling
+├── models/          # SQLModel persistence entities
+├── schemas/         # Request/response DTOs per domain (Pydantic)
+└── core/            # Cross-cutting: config, database, security, rate limiting
+```
+
+Controllers delegate to services; services raise `HTTPException` for domain
+rule violations, keeping error responses FastAPI-native.
+
 ## Local development (outside Docker)
 
 ```bash
@@ -25,6 +40,15 @@ pytest -v
 The tests use a dedicated temporary SQLite database (created in a system
 temporary folder, isolated from any real database) and need no external
 service.
+
+Two layers are covered:
+
+- **API tests** (`test_*.py`): request/response behavior through the ASGI
+  app (TestClient), covering routing, permissions and status codes.
+- **Service unit tests** (`test_service_*.py`): the business logic layer
+  called directly, without HTTP. These request the `isolated_catalog`
+  fixture, which snapshots and restores the shared catalog tables so each
+  test runs against a predictable state regardless of execution order.
 
 Current coverage (Phases 1 & 2 + translation API):
 - authentication (login, refresh token, password change, brute-force protection)

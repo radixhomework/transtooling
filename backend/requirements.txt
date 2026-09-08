@@ -6,6 +6,7 @@ passlib[argon2]==1.7.4
 python-multipart==0.0.9
 pydantic-settings==2.5.2
 email-validator==2.2.0
+aiofiles==24.1.0
 
 # --- Dépendances de test (dev uniquement, pas nécessaires en prod) ---
 pytest==8.3.3

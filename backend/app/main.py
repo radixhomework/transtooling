@@ -2,12 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 
+from app.controllers import app_settings, auth, jobs, translation, users, whisper_models
 from app.core.config import settings
 from app.core.database import engine, init_db
 from app.core.security import hash_password
 from app.models.user import User, UserRole
-from app.models.app_settings import AppSettings as AppSettingsModel
-from app.routers import auth, users, jobs, whisper_models, app_settings, translation
+from app.services.app_settings_service import ensure_app_settings
 
 app = FastAPI(title="Transcription Audio FR - API")
 
@@ -33,7 +33,7 @@ app.include_router(translation.admin_models_router)
 def on_startup():
     init_db()
     _ensure_admin_account()
-    _ensure_app_settings()
+    ensure_app_settings()
 
 
 def _ensure_admin_account() -> None:
@@ -55,22 +55,6 @@ def _ensure_admin_account() -> None:
             is_active=True,
         )
         session.add(admin)
-        session.commit()
-
-
-def _ensure_app_settings() -> None:
-    """Creates the singleton settings row if it does not exist yet."""
-    with Session(engine) as session:
-        existing = session.get(AppSettingsModel, 1)
-        if existing:
-            return
-
-        app_settings_row = AppSettingsModel(
-            id=1,
-            max_file_size_mb=settings.default_max_file_size_mb,
-            max_duration_min=settings.default_max_duration_min,
-        )
-        session.add(app_settings_row)
         session.commit()
 
 
