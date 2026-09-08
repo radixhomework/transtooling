@@ -13,13 +13,13 @@ from app.services import auth_service
 PASSWORD = "UnitPass123"
 
 
-@pytest.fixture()
+@pytest.fixture
 def db_session(isolated_catalog):
     with Session(engine) as session:
         yield session
 
 
-@pytest.fixture()
+@pytest.fixture
 def unit_user(db_session):
     """Dedicated user row so tests never touch the shared admin account."""
     login_name = "unit-auth-user"

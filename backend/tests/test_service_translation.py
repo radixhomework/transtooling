@@ -24,13 +24,13 @@ from app.models.user import User
 from app.services import translation_service
 
 
-@pytest.fixture()
+@pytest.fixture
 def db_session(isolated_catalog):
     with Session(engine) as session:
         yield session
 
 
-@pytest.fixture()
+@pytest.fixture
 def unit_user(db_session):
     login_name = "unit-translation-user"
     user = db_session.exec(select(User).where(User.login == login_name)).first()
@@ -42,7 +42,7 @@ def unit_user(db_session):
     return user
 
 
-@pytest.fixture()
+@pytest.fixture
 def enabled_model(db_session):
     direction = "fr-en"
     model = db_session.exec(
@@ -197,23 +197,21 @@ def test_create_archive_job_stores_pending_job(db_session, unit_user, enabled_mo
 
 def test_create_archive_job_rejects_non_zip(db_session, unit_user, enabled_model):
     upload = FakeUpload(b"plain", "archive.tar")
+    coro = translation_service.create_archive_job(
+        db_session, unit_user, "fr-en", "archive.tar", upload
+    )
     with pytest.raises(HTTPException) as exc_info:
-        asyncio.run(
-            translation_service.create_archive_job(
-                db_session, unit_user, "fr-en", "archive.tar", upload
-            )
-        )
+        asyncio.run(coro)
     assert exc_info.value.status_code == 400
 
 
 def test_create_archive_job_cleans_up_on_invalid_zip(db_session, unit_user, enabled_model):
     upload = FakeUpload(b"not a zip", "archive.zip")
+    coro = translation_service.create_archive_job(
+        db_session, unit_user, "fr-en", "archive.zip", upload
+    )
     with pytest.raises(HTTPException) as exc_info:
-        asyncio.run(
-            translation_service.create_archive_job(
-                db_session, unit_user, "fr-en", "archive.zip", upload
-            )
-        )
+        asyncio.run(coro)
     assert exc_info.value.status_code == 400
     leftovers = [f for f in os.listdir(settings.translation_tmp_path) if f.endswith(".zip")]
     assert leftovers == []

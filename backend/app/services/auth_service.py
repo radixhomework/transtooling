@@ -1,6 +1,6 @@
 """Business logic for authentication: login, token refresh, password change."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
 from jose import JWTError
@@ -41,7 +41,7 @@ def login(session: Session, login_name: str, password: str) -> TokenResponse:
 
     reset_attempts(login_name)
 
-    user.last_login_at = datetime.utcnow()
+    user.last_login_at = datetime.now(timezone.utc)
     session.add(user)
     session.commit()
 

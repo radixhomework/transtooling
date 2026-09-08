@@ -10,13 +10,13 @@ from app.models.user import User, UserRole
 from app.services import user_service
 
 
-@pytest.fixture()
+@pytest.fixture
 def db_session(isolated_catalog):
     with Session(engine) as session:
         yield session
 
 
-@pytest.fixture()
+@pytest.fixture
 def unit_admin(db_session):
     """A dedicated admin row to pass as the acting administrator."""
     login_name = "unit-users-admin"

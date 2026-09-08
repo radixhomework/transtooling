@@ -10,7 +10,7 @@ from app.schemas import AppSettingsUpdateRequest
 from app.services import app_settings_service
 
 
-@pytest.fixture()
+@pytest.fixture
 def db_session(isolated_catalog):
     with Session(engine) as session:
         yield session

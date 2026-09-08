@@ -6,6 +6,7 @@ import subprocess
 import uuid
 from typing import Optional
 
+import aiofiles
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
@@ -111,7 +112,7 @@ def _resolve_model(session: Session, model: Optional[str]) -> WhisperModel:
 
 async def _save_upload_with_limit(upload_file, tmp_path: str, max_size_bytes: int, max_size_mb: int) -> None:
     size = 0
-    with open(tmp_path, "wb") as out_file:
+    async with aiofiles.open(tmp_path, "wb") as out_file:
         while chunk := await upload_file.read(1024 * 1024):
             size += len(chunk)
             if size > max_size_bytes:
@@ -119,7 +120,7 @@ async def _save_upload_with_limit(upload_file, tmp_path: str, max_size_bytes: in
                     status_code=413,
                     detail=f"Fichier trop volumineux (max {max_size_mb} Mo)",
                 )
-            out_file.write(chunk)
+            await out_file.write(chunk)
 
 
 def list_jobs(session: Session, current_user: User) -> list[TranscriptionJob]:

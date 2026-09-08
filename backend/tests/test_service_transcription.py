@@ -16,13 +16,13 @@ from app.models.whisper_model import ModelStatus, WhisperModel
 from app.services import transcription_service
 
 
-@pytest.fixture()
+@pytest.fixture
 def db_session(isolated_catalog):
     with Session(engine) as session:
         yield session
 
 
-@pytest.fixture()
+@pytest.fixture
 def unit_user(db_session):
     login_name = "unit-transcription-user"
     user = db_session.exec(select(User).where(User.login == login_name)).first()
@@ -34,7 +34,7 @@ def unit_user(db_session):
     return user
 
 
-@pytest.fixture()
+@pytest.fixture
 def default_model(db_session):
     name = "tiny"
     model = db_session.exec(select(WhisperModel).where(WhisperModel.name == name)).first()
@@ -80,23 +80,21 @@ def _make_job(db_session, unit_user, **overrides) -> TranscriptionJob:
 @pytest.mark.parametrize("filename", ["audio.mp4", "audio", "audio.MP4", "audio.flac"])
 def test_create_job_rejects_unsupported_extensions(db_session, unit_user, filename):
     upload = FakeUpload(b"whatever", filename)
+    coro = transcription_service.create_job(
+        db_session, unit_user, filename=filename, model=None, upload_file=upload
+    )
     with pytest.raises(HTTPException) as exc_info:
-        asyncio.run(
-            transcription_service.create_job(
-                db_session, unit_user, filename=filename, model=None, upload_file=upload
-            )
-        )
+        asyncio.run(coro)
     assert exc_info.value.status_code == 400
 
 
 def test_create_job_rejects_unknown_model(db_session, unit_user, default_model):
     upload = FakeUpload(b"whatever", "audio.wav")
+    coro = transcription_service.create_job(
+        db_session, unit_user, filename="audio.wav", model="nonexistent-model", upload_file=upload
+    )
     with pytest.raises(HTTPException) as exc_info:
-        asyncio.run(
-            transcription_service.create_job(
-                db_session, unit_user, filename="audio.wav", model="nonexistent-model", upload_file=upload
-            )
-        )
+        asyncio.run(coro)
     assert exc_info.value.status_code == 400
 
 
@@ -112,12 +110,11 @@ def test_create_job_rejects_oversized_upload(db_session, unit_user, default_mode
     try:
         big = b"x" * (1024 * 1024 + 1)
         upload = FakeUpload(big, "audio.wav")
+        coro = transcription_service.create_job(
+            db_session, unit_user, filename="audio.wav", model=None, upload_file=upload
+        )
         with pytest.raises(HTTPException) as exc_info:
-            asyncio.run(
-                transcription_service.create_job(
-                    db_session, unit_user, filename="audio.wav", model=None, upload_file=upload
-                )
-            )
+            asyncio.run(coro)
         assert exc_info.value.status_code == 413
     finally:
         row.max_file_size_mb = original

@@ -30,10 +30,9 @@ def _initialized_database():
     """Service-level unit tests never start the ASGI app, so make sure the
     schema exists. init_db() is idempotent (CREATE TABLE IF NOT EXISTS)."""
     init_db()
-    yield
 
 
-@pytest.fixture()
+@pytest.fixture
 def isolated_catalog():
     """Snapshot-and-restore of the shared catalog tables (models, settings,
     jobs). Service unit tests request it (via their db_session fixture) so
@@ -143,7 +142,7 @@ def client():
         yield c
 
 
-@pytest.fixture()
+@pytest.fixture
 def admin_token(client):
     response = client.post(
         "/api/auth/login",
@@ -153,12 +152,12 @@ def admin_token(client):
     return response.json()["access_token"]
 
 
-@pytest.fixture()
+@pytest.fixture
 def admin_headers(admin_token):
     return {"Authorization": f"Bearer {admin_token}"}
 
 
-@pytest.fixture()
+@pytest.fixture
 def enabled_default_model():
     """
     Inserts a Whisper model row directly in the database, marked as
@@ -199,7 +198,7 @@ def _generate_audio_file(path: str, duration_seconds: int, fmt: str = "wav") -> 
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def short_audio_file():
     """Valid audio file of ~1 second (well under the default limits)."""
     path = os.path.join(_tmp_dir, "short_audio.wav")
@@ -207,7 +206,7 @@ def short_audio_file():
     yield path
 
 
-@pytest.fixture()
+@pytest.fixture
 def invalid_audio_file():
     """File with a valid audio extension but unusable content."""
     path = os.path.join(_tmp_dir, "invalid_audio.wav")

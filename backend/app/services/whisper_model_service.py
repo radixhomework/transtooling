@@ -74,39 +74,47 @@ def update_model(
         raise HTTPException(status_code=404, detail="Modèle introuvable")
 
     if is_enabled is not None:
-        if is_enabled and model.status != ModelStatus.downloaded:
-            raise HTTPException(
-                status_code=400,
-                detail="Le modèle doit être téléchargé avant d'être activé",
-            )
-        if not is_enabled and model.is_default:
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    "Impossible de désactiver le modèle par défaut. "
-                    "Changez d'abord le modèle par défaut."
-                ),
-            )
-        model.is_enabled = is_enabled
+        _apply_enable(model, is_enabled)
 
     if is_default:
-        if model.status != ModelStatus.downloaded:
-            raise HTTPException(
-                status_code=400,
-                detail="Le modèle par défaut doit être téléchargé et activé",
-            )
-        # Only one default model at a time.
-        for other in session.exec(select(WhisperModel)).all():
-            if other.id != model.id and other.is_default:
-                other.is_default = False
-                session.add(other)
-        model.is_default = True
-        model.is_enabled = True
+        _apply_default(session, model)
 
     session.add(model)
     session.commit()
     session.refresh(model)
     return model
+
+
+def _apply_enable(model: WhisperModel, is_enabled: bool) -> None:
+    if is_enabled and model.status != ModelStatus.downloaded:
+        raise HTTPException(
+            status_code=400,
+            detail="Le modèle doit être téléchargé avant d'être activé",
+        )
+    if not is_enabled and model.is_default:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Impossible de désactiver le modèle par défaut. "
+                "Changez d'abord le modèle par défaut."
+            ),
+        )
+    model.is_enabled = is_enabled
+
+
+def _apply_default(session: Session, model: WhisperModel) -> None:
+    if model.status != ModelStatus.downloaded:
+        raise HTTPException(
+            status_code=400,
+            detail="Le modèle par défaut doit être téléchargé et activé",
+        )
+    # Only one default model at a time.
+    for other in session.exec(select(WhisperModel)).all():
+        if other.id != model.id and other.is_default:
+            other.is_default = False
+            session.add(other)
+    model.is_default = True
+    model.is_enabled = True
 
 
 def list_enabled_models(session: Session) -> list[WhisperModel]:

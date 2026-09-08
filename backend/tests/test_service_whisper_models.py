@@ -9,7 +9,7 @@ from app.models.whisper_model import ModelStatus, WhisperModel
 from app.services import whisper_model_service
 
 
-@pytest.fixture()
+@pytest.fixture
 def db_session(isolated_catalog):
     with Session(engine) as session:
         yield session

@@ -6,6 +6,7 @@ import os
 import uuid
 import zipfile
 
+import aiofiles
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
@@ -190,7 +191,7 @@ async def create_archive_job(
 
     try:
         size = 0
-        with open(tmp_path, "wb") as out_file:
+        async with aiofiles.open(tmp_path, "wb") as out_file:
             while chunk := await upload_file.read(1024 * 1024):
                 size += len(chunk)
                 if size > max_size_bytes:
@@ -198,7 +199,7 @@ async def create_archive_job(
                         status_code=413,
                         detail=f"Archive trop volumineuse (max {limits.max_archive_size_mb} Mo)",
                     )
-                out_file.write(chunk)
+                await out_file.write(chunk)
 
         validate_zip_safety(tmp_path, limits)
 
