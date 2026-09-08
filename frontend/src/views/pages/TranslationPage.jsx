@@ -1,150 +1,52 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as translationApi from "../../models/translation";
+import { useTranslationViewModel } from "../../viewmodels/useTranslationViewModel";
 import StatusBadge from "../components/StatusBadge.jsx";
 import Waveform from "../components/Waveform.jsx";
 import "./TranslationPage.css";
-
-const POLL_INTERVAL_MS = 4000;
 
 const DIRECTION_KEYS = {
   "fr-en": "directionFrEn",
   "en-fr": "directionEnFr",
 };
 
+function formatDate(isoString, language) {
+  if (!isoString) return "—";
+  const locale = language === "en" ? "en-GB" : "fr-FR";
+  return new Date(isoString).toLocaleString(locale, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function TranslationPage() {
   const { t, i18n } = useTranslation();
+  const {
+    directions,
+    direction,
+    text,
+    archiveFile,
+    jobs,
+    isLoading,
+    isSubmitting,
+    uploadPercent,
+    error,
+    hasActiveModel,
+    fileInputRef,
+    setDirection,
+    setText,
+    setArchiveFile,
+    submitText,
+    submitArchive,
+    cancelJob,
+    downloadJob,
+    deleteJob,
+  } = useTranslationViewModel();
+
   const [tab, setTab] = useState("text");
-  const [directions, setDirections] = useState([]);
-  const [direction, setDirection] = useState("");
-  const [text, setText] = useState("");
-  const [archiveFile, setArchiveFile] = useState(null);
-  const [jobs, setJobs] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadPercent, setUploadPercent] = useState(0);
-  const [error, setError] = useState(null);
-  const fileInputRef = useRef(null);
-
-  function formatDate(isoString) {
-    if (!isoString) return "—";
-    const locale = i18n.language === "en" ? "en-GB" : "fr-FR";
-    return new Date(isoString).toLocaleString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-
-  const fetchJobs = useCallback(async () => {
-    try {
-      const data = await translationApi.listTranslationJobs();
-      setJobs(data);
-    } catch {
-      // Silent failure on periodic polling.
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    translationApi
-      .listEnabledDirections()
-      .then((dirs) => {
-        setDirections(dirs.map((d) => d.direction));
-        if (dirs.length > 0) setDirection(dirs[0].direction);
-      })
-      .catch(() => setDirections([]));
-    fetchJobs();
-  }, [fetchJobs]);
-
-  useEffect(() => {
-    const hasActiveJob = jobs.some(
-      (j) => j.status === "pending" || j.status === "processing" || j.status === "cancelling"
-    );
-    if (hasActiveJob) {
-      const id = setInterval(fetchJobs, POLL_INTERVAL_MS);
-      return () => clearInterval(id);
-    }
-  }, [jobs, fetchJobs]);
-
-  const hasActiveModel = directions.length > 0;
-
-  async function handleSubmitText(e) {
-    e.preventDefault();
-    if (!text.trim() || !direction) return;
-    setError(null);
-    setIsSubmitting(true);
-    try {
-      await translationApi.createTextJob(direction, text);
-      setText("");
-      await fetchJobs();
-    } catch (err) {
-      setError(err.response?.data?.detail || t("translation.errorCreate"));
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function handleSubmitArchive(e) {
-    e.preventDefault();
-    if (!archiveFile || !direction) return;
-    setError(null);
-    setIsSubmitting(true);
-    setUploadPercent(0);
-    try {
-      await translationApi.createArchiveJob(archiveFile, direction, (progressEvent) => {
-        if (progressEvent.total) {
-          setUploadPercent(Math.round((progressEvent.loaded / progressEvent.total) * 100));
-        }
-      });
-      setArchiveFile(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      await fetchJobs();
-    } catch (err) {
-      setError(err.response?.data?.detail || t("translation.errorArchive"));
-    } finally {
-      setIsSubmitting(false);
-      setUploadPercent(0);
-    }
-  }
-
-  async function handleCancel(job) {
-    try {
-      await translationApi.cancelTranslationJob(job.id);
-      await fetchJobs();
-    } catch {
-      setError(t("translation.errorCancel"));
-    }
-  }
-
-  async function handleDownload(job) {
-    try {
-      const blob = await translationApi.downloadTranslationJob(job.id);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = job.job_type === "archive" ? "traduction.zip" : "traduction.txt";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch {
-      setError(t("translation.errorDownload"));
-    }
-  }
-
-  async function handleDelete(job) {
-    if (!window.confirm(t("translation.deleteConfirm"))) return;
-    try {
-      await translationApi.deleteTranslationJob(job.id);
-      setJobs((prev) => prev.filter((j) => j.id !== job.id));
-    } catch {
-      setError(t("translation.errorDelete"));
-    }
-  }
 
   return (
     <div className="translation-page">
@@ -195,7 +97,13 @@ export default function TranslationPage() {
           </div>
 
           {tab === "text" ? (
-            <form onSubmit={handleSubmitText} className="translation-text-form">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                submitText();
+              }}
+              className="translation-text-form"
+            >
               <div className="field">
                 <label htmlFor="translation-text">{t("translation.textLabel")}</label>
                 <textarea
@@ -213,7 +121,13 @@ export default function TranslationPage() {
               </button>
             </form>
           ) : (
-            <form onSubmit={handleSubmitArchive} className="translation-archive-form">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                submitArchive();
+              }}
+              className="translation-archive-form"
+            >
               <div className="field">
                 <label htmlFor="translation-archive">{t("translation.archiveLabel")}</label>
                 <input
@@ -270,25 +184,27 @@ export default function TranslationPage() {
                     {t(`translation.${DIRECTION_KEYS[job.direction] || job.direction}`)}
                   </span>
                   <StatusBadge status={job.status} />
-                  <span className="mono translation-job-date">{formatDate(job.created_at)}</span>
+                  <span className="mono translation-job-date">
+                    {formatDate(job.created_at, i18n.language)}
+                  </span>
                   <span className="translation-job-actions">
                     {["pending", "processing", "cancelling"].includes(job.status) && (
                       <button
                         className="btn btn-secondary btn-sm"
                         disabled={job.status === "cancelling"}
-                        onClick={() => handleCancel(job)}
+                        onClick={() => cancelJob(job)}
                       >
                         {t("common.cancelJob")}
                       </button>
                     )}
                     {job.status === "done" && (
-                      <button className="btn btn-secondary btn-sm" onClick={() => handleDownload(job)}>
+                      <button className="btn btn-secondary btn-sm" onClick={() => downloadJob(job)}>
                         {job.job_type === "archive"
                           ? t("translation.downloadZip")
                           : t("translation.downloadTxt")}
                       </button>
                     )}
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(job)}>
+                    <button className="btn btn-danger btn-sm" onClick={() => deleteJob(job)}>
                       {t("common.delete")}
                     </button>
                   </span>

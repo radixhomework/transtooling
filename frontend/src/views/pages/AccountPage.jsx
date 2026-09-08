@@ -1,49 +1,23 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../viewmodels/AuthContext/AuthContext.jsx";
-import * as authApi from "../../models/auth";
+import { usePasswordChangeViewModel } from "../../viewmodels/usePasswordChangeViewModel";
 import "./AccountPage.css";
 
 export default function AccountPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError(null);
-    setSuccess(false);
-
-    if (newPassword !== confirmPassword) {
-      setError(t("account.errorMismatch"));
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await authApi.changePassword(currentPassword, newPassword);
-      setSuccess(true);
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-    } catch (err) {
-      const status = err.response?.status;
-      if (status === 400) {
-        setError(t("account.errorCurrent"));
-      } else if (status === 422) {
-        setError(t("account.errorPolicy"));
-      } else {
-        setError(t("account.errorGeneric"));
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+  const {
+    currentPassword,
+    newPassword,
+    confirmPassword,
+    error,
+    success,
+    isSubmitting,
+    setCurrentPassword,
+    setNewPassword,
+    setConfirmPassword,
+    submit,
+  } = usePasswordChangeViewModel();
 
   return (
     <div className="account-page">
@@ -64,7 +38,13 @@ export default function AccountPage() {
 
       <div className="card account-form-card">
         <h2>{t("account.changeTitle")}</h2>
-        <form onSubmit={handleSubmit} className="account-form">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit();
+          }}
+          className="account-form"
+        >
           <div className="field">
             <label htmlFor="current-password">{t("account.currentPassword")}</label>
             <input

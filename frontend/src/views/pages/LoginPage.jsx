@@ -1,39 +1,19 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../../viewmodels/AuthContext/AuthContext.jsx";
 import { setLanguage } from "../../i18n";
+import { useLoginViewModel } from "../../viewmodels/useLoginViewModel";
 import "./LoginPage.css";
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation();
-  const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login: doLogin } = useAuth();
-  const navigate = useNavigate();
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
-    try {
-      await doLogin(login, password);
-      navigate("/");
-    } catch (err) {
-      const status = err.response?.status;
-      if (status === 429) {
-        setError(t("login.errorRateLimited"));
-      } else if (status === 403) {
-        setError(t("login.errorDisabled"));
-      } else {
-        setError(t("login.errorInvalid"));
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+  const {
+    login,
+    password,
+    error,
+    isSubmitting,
+    setLogin,
+    setPassword,
+    submit,
+  } = useLoginViewModel();
 
   return (
     <div className="login-page">
@@ -58,7 +38,13 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="login-form">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit();
+          }}
+          className="login-form"
+        >
           <div className="field">
             <label htmlFor="login">{t("login.login")}</label>
             <input

@@ -1,145 +1,49 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as jobsApi from "../../models/jobs";
-import * as modelsApi from "../../models/whisperModels";
+import { useTranscriptionViewModel } from "../../viewmodels/useTranscriptionViewModel";
 import StatusBadge from "../components/StatusBadge.jsx";
 import Waveform from "../components/Waveform.jsx";
 import "./DashboardPage.css";
 
 const ACCEPTED_EXTENSIONS = [".mp3", ".wav", ".m4a", ".ogg", ".webm"];
-const POLL_INTERVAL_MS = 4000;
+
+function formatDate(isoString, language) {
+  if (!isoString) return "—";
+  const locale = language === "en" ? "en-GB" : "fr-FR";
+  return new Date(isoString).toLocaleString(locale, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function DashboardPage() {
   const { t, i18n } = useTranslation();
-  const [jobs, setJobs] = useState([]);
-  const [isLoadingJobs, setIsLoadingJobs] = useState(true);
-  const [uploadError, setUploadError] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const {
+    jobs,
+    isLoadingJobs,
+    uploadError,
+    isUploading,
+    uploadProgress,
+    enabledModels,
+    selectedModel,
+    fileInputRef,
+    setSelectedModel,
+    uploadFile,
+    cancelJob,
+    downloadJob,
+    deleteJob,
+  } = useTranscriptionViewModel();
+
   const [dragActive, setDragActive] = useState(false);
-  const [enabledModels, setEnabledModels] = useState([]);
-  const [selectedModel, setSelectedModel] = useState("");
   const [downloadMenuJobId, setDownloadMenuJobId] = useState(null);
-  const fileInputRef = useRef(null);
-  const pollRef = useRef(null);
-
-  function formatDate(isoString) {
-    if (!isoString) return "—";
-    const locale = i18n.language === "en" ? "en-GB" : "fr-FR";
-    return new Date(isoString).toLocaleString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-
-  const fetchJobs = useCallback(async () => {
-    try {
-      const data = await jobsApi.listJobs();
-      data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      setJobs(data);
-    } catch {
-      // Silent failure on periodic polling: we do not want to
-      // interrupt the user for a transient network failure.
-    } finally {
-      setIsLoadingJobs(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchJobs();
-  }, [fetchJobs]);
-
-  useEffect(() => {
-    // Models offered for upload (selector): displayed only when there are
-    // several; the default model covers the simple case.
-    modelsApi
-      .listEnabledModels()
-      .then((models) => setEnabledModels(models))
-      .catch(() => setEnabledModels([]));
-  }, []);
-
-  useEffect(() => {
-    const hasActiveJob = jobs.some(
-      (j) => j.status === "pending" || j.status === "processing" || j.status === "cancelling"
-    );
-    if (hasActiveJob) {
-      pollRef.current = setInterval(fetchJobs, POLL_INTERVAL_MS);
-      return () => clearInterval(pollRef.current);
-    }
-  }, [jobs, fetchJobs]);
-
-  async function handleFiles(fileList) {
-    const file = fileList?.[0];
-    if (!file) return;
-
-    setUploadError(null);
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    try {
-      await jobsApi.createJob(
-        file,
-        (progressEvent) => {
-          if (progressEvent.total) {
-            setUploadProgress(Math.round((progressEvent.loaded / progressEvent.total) * 100));
-          }
-        },
-        selectedModel || undefined
-      );
-      await fetchJobs();
-    } catch (err) {
-      const detail = err.response?.data?.detail;
-      setUploadError(detail || t("dashboard.errorUpload"));
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  }
 
   function handleDrop(e) {
     e.preventDefault();
     setDragActive(false);
-    handleFiles(e.dataTransfer.files);
-  }
-
-  async function handleCancel(job) {
-    try {
-      await jobsApi.cancelJob(job.id);
-      await fetchJobs();
-    } catch {
-      setUploadError(t("dashboard.errorCancel"));
-    }
-  }
-
-  async function handleDownload(job, format) {
-    try {
-      const blob = await jobsApi.downloadJobUrl(job.id, format);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      const baseName = job.filename_original.replace(/\.[^.]+$/, "");
-      a.download = `${baseName}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch {
-      setUploadError(t("dashboard.errorDownload"));
-    }
-  }
-
-  async function handleDelete(job) {
-    if (!window.confirm(`Supprimer la transcription de « ${job.filename_original} » ?`)) return;
-    try {
-      await jobsApi.deleteJob(job.id);
-      setJobs((prev) => prev.filter((j) => j.id !== job.id));
-    } catch {
-      setUploadError(t("dashboard.errorDelete"));
-    }
+    uploadFile(e.dataTransfer.files?.[0]);
   }
 
   return (
@@ -204,7 +108,7 @@ export default function DashboardPage() {
               ref={fileInputRef}
               type="file"
               accept={ACCEPTED_EXTENSIONS.join(",")}
-              onChange={(e) => handleFiles(e.target.files)}
+              onChange={(e) => uploadFile(e.target.files?.[0])}
               hidden
             />
           </>
@@ -257,13 +161,13 @@ export default function DashboardPage() {
                       )}
                     </td>
                     <td className="mono">{job.model_used}</td>
-                    <td className="mono">{formatDate(job.created_at)}</td>
+                    <td className="mono">{formatDate(job.created_at, i18n.language)}</td>
                     <td className="job-actions">
                       {["pending", "processing", "cancelling"].includes(job.status) && (
                         <button
                           className="btn btn-secondary btn-sm"
                           disabled={job.status === "cancelling"}
-                          onClick={() => handleCancel(job)}
+                          onClick={() => cancelJob(job)}
                         >
                           {t("common.cancelJob")}
                         </button>
@@ -289,7 +193,7 @@ export default function DashboardPage() {
                               <button
                                 onClick={() => {
                                   setDownloadMenuJobId(null);
-                                  handleDownload(job, "vtt");
+                                  downloadJob(job, "vtt");
                                 }}
                               >
                                 {t("dashboard.downloadVtt")}
@@ -297,7 +201,7 @@ export default function DashboardPage() {
                               <button
                                 onClick={() => {
                                   setDownloadMenuJobId(null);
-                                  handleDownload(job, "txt");
+                                  downloadJob(job, "txt");
                                 }}
                               >
                                 {t("dashboard.downloadTxt")}
@@ -306,7 +210,7 @@ export default function DashboardPage() {
                           )}
                         </div>
                       )}
-                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(job)}>
+                      <button className="btn btn-danger btn-sm" onClick={() => deleteJob(job)}>
                         {t("common.delete")}
                       </button>
                     </td>

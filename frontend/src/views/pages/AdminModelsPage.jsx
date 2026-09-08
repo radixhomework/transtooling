@@ -1,11 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as modelsApi from "../../models/whisperModels";
-import * as translationApi from "../../models/translation";
+import { useModelsAdminViewModel } from "../../viewmodels/useModelsAdminViewModel";
 import Waveform from "../components/Waveform.jsx";
 import "./AdminModelsPage.css";
-
-const POLL_INTERVAL_MS = 4000;
 
 // Approximate sizes, indicative before download; the actual on-disk
 // size is reported by the backend once the model is downloaded.
@@ -31,6 +27,15 @@ const DIRECTION_KEYS = {
   "en-fr": "directionEnFr",
 };
 
+function formatSizeMB(sizeMB, language) {
+  if (sizeMB == null) return null;
+  if (sizeMB >= 1024) {
+    const go = (sizeMB / 1024).toFixed(1);
+    return language === "en" ? `${go} GB` : `${go.replace(".", ",")} Go`;
+  }
+  return `${sizeMB} MB`;
+}
+
 function ModelStatusLine({ model }) {
   const { t } = useTranslation();
   return (
@@ -41,71 +46,10 @@ function ModelStatusLine({ model }) {
   );
 }
 
-function useModels(fetcher) {
-  const { t } = useTranslation();
-  const [models, setModels] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [busyKey, setBusyKey] = useState(null);
-
-  const fetchModels = useCallback(async () => {
-    try {
-      const data = await fetcher();
-      setModels(data);
-    } catch {
-      setError(t("adminModels.errorLoad"));
-    } finally {
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetcher]);
-
-  useEffect(() => {
-    fetchModels();
-  }, [fetchModels]);
-
-  useEffect(() => {
-    const hasDownloading = models.some((m) => m.status === "downloading");
-    if (hasDownloading) {
-      const id = setInterval(fetchModels, POLL_INTERVAL_MS);
-      return () => clearInterval(id);
-    }
-  }, [models, fetchModels]);
-
-  const withBusy = useCallback(
-    async (key, action) => {
-      setError(null);
-      setBusyKey(key);
-      try {
-        await action();
-        await fetchModels();
-      } catch (err) {
-        setError(err.response?.data?.detail || t("common.errorGeneric"));
-      } finally {
-        setBusyKey(null);
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [fetchModels]
-  );
-
-  return { models, isLoading, error, busyKey, withBusy };
-}
-
 function WhisperModelsSection() {
   const { t, i18n } = useTranslation();
-  const { models, isLoading, error, busyKey, withBusy } = useModels(modelsApi.listWhisperModels);
-
-  function formatSizeMB(sizeMB) {
-    if (sizeMB == null) return null;
-    if (sizeMB >= 1024) {
-      const go = (sizeMB / 1024).toFixed(1);
-      return i18n.language === "en"
-        ? `${go} GB`
-        : `${go.replace(".", ",")} Go`;
-    }
-    return `${sizeMB} MB`;
-  }
+  const { models, isLoading, error, busyKey, download, update, remove } =
+    useModelsAdminViewModel().whisper;
 
   return (
     <section className="models-section">
@@ -122,7 +66,10 @@ function WhisperModelsSection() {
         <div className="models-grid">
           {models.map((model) => {
             const isBusy = busyKey === model.name;
-            const sizeLabel = formatSizeMB(model.disk_size_mb ?? WHISPER_APPROX_SIZE_MB[model.name]);
+            const sizeLabel = formatSizeMB(
+              model.disk_size_mb ?? WHISPER_APPROX_SIZE_MB[model.name],
+              i18n.language
+            );
             return (
               <div key={model.name} className={`card model-card ${model.is_default ? "is-default" : ""}`}>
                 <div className="model-card-header">
@@ -147,9 +94,7 @@ function WhisperModelsSection() {
                     <button
                       className="btn btn-primary btn-sm"
                       disabled={isBusy}
-                      onClick={() =>
-                        withBusy(model.name, () => modelsApi.downloadWhisperModel(model.name))
-                      }
+                      onClick={() => download(model.name)}
                     >
                       {t("adminModels.download")}
                     </button>
@@ -161,11 +106,7 @@ function WhisperModelsSection() {
                         <button
                           className="btn btn-secondary btn-sm"
                           disabled={isBusy}
-                          onClick={() =>
-                            withBusy(model.name, () =>
-                              modelsApi.updateWhisperModel(model.name, { is_enabled: true })
-                            )
-                          }
+                          onClick={() => update(model.name, { is_enabled: true })}
                         >
                           {t("adminModels.enable")}
                         </button>
@@ -176,22 +117,14 @@ function WhisperModelsSection() {
                           <button
                             className="btn btn-secondary btn-sm"
                             disabled={isBusy}
-                            onClick={() =>
-                              withBusy(model.name, () =>
-                                modelsApi.updateWhisperModel(model.name, { is_default: true })
-                              )
-                            }
+                            onClick={() => update(model.name, { is_default: true })}
                           >
                             {t("adminModels.set_default")}
                           </button>
                           <button
                             className="btn btn-secondary btn-sm"
                             disabled={isBusy}
-                            onClick={() =>
-                              withBusy(model.name, () =>
-                                modelsApi.updateWhisperModel(model.name, { is_enabled: false })
-                              )
-                            }
+                            onClick={() => update(model.name, { is_enabled: false })}
                           >
                             {t("adminModels.disable")}
                           </button>
@@ -212,9 +145,7 @@ function WhisperModelsSection() {
                         <button
                           className="btn btn-danger btn-sm"
                           disabled={isBusy}
-                          onClick={() =>
-                            withBusy(model.name, () => modelsApi.deleteWhisperModel(model.name))
-                          }
+                          onClick={() => remove(model.name)}
                         >
                           {t("common.delete")}
                         </button>
@@ -233,19 +164,8 @@ function WhisperModelsSection() {
 
 function TranslationModelsSection() {
   const { t, i18n } = useTranslation();
-  const fetcher = useCallback(() => translationApi.listTranslationModels(), []);
-  const { models, isLoading, error, busyKey, withBusy } = useModels(fetcher);
-
-  function formatSizeMB(sizeMB) {
-    if (sizeMB == null) return null;
-    if (sizeMB >= 1024) {
-      const go = (sizeMB / 1024).toFixed(1);
-      return i18n.language === "en"
-        ? `${go} GB`
-        : `${go.replace(".", ",")} Go`;
-    }
-    return `${sizeMB} MB`;
-  }
+  const { models, isLoading, error, busyKey, download, update, remove } =
+    useModelsAdminViewModel().translation;
 
   return (
     <section className="models-section">
@@ -263,7 +183,8 @@ function TranslationModelsSection() {
           {models.map((model) => {
             const isBusy = busyKey === model.direction;
             const sizeLabel = formatSizeMB(
-              model.disk_size_mb ?? DIRECTION_APPROX_SIZE_MB[model.direction]
+              model.disk_size_mb ?? DIRECTION_APPROX_SIZE_MB[model.direction],
+              i18n.language
             );
             return (
               <div key={model.direction} className="card model-card">
@@ -288,11 +209,7 @@ function TranslationModelsSection() {
                     <button
                       className="btn btn-primary btn-sm"
                       disabled={isBusy}
-                      onClick={() =>
-                        withBusy(model.direction, () =>
-                          translationApi.downloadTranslationModel(model.direction)
-                        )
-                      }
+                      onClick={() => download(model.direction)}
                     >
                       {t("adminModels.download")}
                     </button>
@@ -304,13 +221,7 @@ function TranslationModelsSection() {
                         <button
                           className="btn btn-secondary btn-sm"
                           disabled={isBusy}
-                          onClick={() =>
-                            withBusy(model.direction, () =>
-                              translationApi.updateTranslationModel(model.direction, {
-                                is_enabled: true,
-                              })
-                            )
-                          }
+                          onClick={() => update(model.direction, { is_enabled: true })}
                         >
                           {t("adminModels.enable")}
                         </button>
@@ -319,13 +230,7 @@ function TranslationModelsSection() {
                         <button
                           className="btn btn-secondary btn-sm"
                           disabled={isBusy}
-                          onClick={() =>
-                            withBusy(model.direction, () =>
-                              translationApi.updateTranslationModel(model.direction, {
-                                is_enabled: false,
-                              })
-                            )
-                          }
+                          onClick={() => update(model.direction, { is_enabled: false })}
                         >
                           {t("adminModels.disable")}
                         </button>
@@ -333,11 +238,7 @@ function TranslationModelsSection() {
                       <button
                         className="btn btn-danger btn-sm"
                         disabled={isBusy}
-                        onClick={() =>
-                          withBusy(model.direction, () =>
-                            translationApi.deleteTranslationModel(model.direction)
-                          )
-                        }
+                        onClick={() => remove(model.direction)}
                       >
                         {t("common.delete")}
                       </button>
@@ -354,7 +255,6 @@ function TranslationModelsSection() {
 }
 
 export default function AdminModelsPage() {
-  const { t } = useTranslation();
   return (
     <div className="admin-models-page">
       <WhisperModelsSection />

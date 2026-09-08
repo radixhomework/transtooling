@@ -1,114 +1,31 @@
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as usersApi from "../../models/users";
+import { useUsersAdminViewModel } from "../../viewmodels/useUsersAdminViewModel";
 import "./AdminUsersPage.css";
-
-function emptyNewUser() {
-  return { login: "", password: "", role: "user" };
-}
 
 export default function AdminUsersPage() {
   const { t } = useTranslation();
-  const [users, setUsers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newUser, setNewUser] = useState(emptyNewUser());
-  const [createError, setCreateError] = useState(null);
-  const [isCreating, setIsCreating] = useState(false);
-
-  const [resetTargetId, setResetTargetId] = useState(null);
-  const [resetPassword, setResetPassword] = useState("");
-  const [resetError, setResetError] = useState(null);
-
-  async function fetchUsers() {
-    setIsLoading(true);
-    try {
-      const data = await usersApi.listUsers();
-      data.sort((a, b) => a.login.localeCompare(b.login));
-      setUsers(data);
-    } catch {
-      setError(t("adminUsers.errorLoad"));
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function handleCreate(e) {
-    e.preventDefault();
-    setCreateError(null);
-    setIsCreating(true);
-    try {
-      await usersApi.createUser(newUser.login, newUser.password, newUser.role);
-      setNewUser(emptyNewUser());
-      setShowCreateForm(false);
-      await fetchUsers();
-    } catch (err) {
-      const status = err.response?.status;
-      if (status === 400) {
-        setCreateError(t("adminUsers.errorLoginTaken"));
-      } else if (status === 422) {
-        setCreateError(t("adminUsers.errorPolicy"));
-      } else {
-        setCreateError(t("adminUsers.errorCreate"));
-      }
-    } finally {
-      setIsCreating(false);
-    }
-  }
-
-  async function handleToggleActive(user) {
-    try {
-      await usersApi.updateUser(user.id, { is_active: !user.is_active });
-      await fetchUsers();
-    } catch {
-      setError(t("adminUsers.errorUpdate"));
-    }
-  }
-
-  async function handleToggleRole(user) {
-    const newRole = user.role === "admin" ? "user" : "admin";
-    const roleLabel = newRole === "admin" ? t("common.roleAdmin") : t("common.roleUser");
-    if (!window.confirm(t("adminUsers.roleChangeConfirm", { login: user.login, role: roleLabel })))
-      return;
-    try {
-      await usersApi.updateUser(user.id, { role: newRole });
-      await fetchUsers();
-    } catch {
-      setError(t("adminUsers.errorRole"));
-    }
-  }
-
-  async function handleDelete(user) {
-    if (!window.confirm(t("adminUsers.deleteConfirm", { login: user.login }))) return;
-    try {
-      await usersApi.deleteUser(user.id);
-      await fetchUsers();
-    } catch {
-      setError(t("adminUsers.errorDelete"));
-    }
-  }
-
-  async function handleResetPassword(e) {
-    e.preventDefault();
-    setResetError(null);
-    try {
-      await usersApi.resetUserPassword(resetTargetId, resetPassword);
-      setResetTargetId(null);
-      setResetPassword("");
-    } catch (err) {
-      const status = err.response?.status;
-      setResetError(
-        status === 422 ? t("adminUsers.errorPolicy") : t("adminUsers.errorReset")
-      );
-    }
-  }
+  const {
+    users,
+    isLoading,
+    error,
+    showCreateForm,
+    newUser,
+    createError,
+    isCreating,
+    resetTargetId,
+    resetPassword,
+    resetError,
+    setShowCreateForm,
+    setNewUser,
+    setResetTargetId,
+    setResetPassword,
+    submitCreate,
+    toggleActive,
+    toggleRole,
+    deleteUser,
+    submitResetPassword,
+    openResetModal,
+  } = useUsersAdminViewModel();
 
   return (
     <div className="admin-users-page">
@@ -120,7 +37,13 @@ export default function AdminUsersPage() {
       </div>
 
       {showCreateForm && (
-        <form onSubmit={handleCreate} className="card create-user-form">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            submitCreate();
+          }}
+          className="card create-user-form"
+        >
           <div className="field">
             <label htmlFor="new-login">{t("adminUsers.login")}</label>
             <input
@@ -180,7 +103,7 @@ export default function AdminUsersPage() {
                 <tr key={user.id}>
                   <td>{user.login}</td>
                   <td>
-                    <button className="role-toggle" onClick={() => handleToggleRole(user)}>
+                    <button className="role-toggle" onClick={() => toggleRole(user)}>
                       {user.role === "admin" ? t("common.roleAdmin") : t("common.roleUser")}
                     </button>
                   </td>
@@ -197,20 +120,16 @@ export default function AdminUsersPage() {
                       : t("adminUsers.never")}
                   </td>
                   <td className="admin-user-actions">
-                    <button className="btn btn-secondary btn-sm" onClick={() => handleToggleActive(user)}>
+                    <button className="btn btn-secondary btn-sm" onClick={() => toggleActive(user)}>
                       {user.is_active ? t("adminUsers.disable") : t("adminUsers.enable")}
                     </button>
                     <button
                       className="btn btn-secondary btn-sm"
-                      onClick={() => {
-                        setResetTargetId(user.id);
-                        setResetPassword("");
-                        setResetError(null);
-                      }}
+                      onClick={() => openResetModal(user)}
                     >
                       {t("adminUsers.resetPassword")}
                     </button>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(user)}>
+                    <button className="btn btn-danger btn-sm" onClick={() => deleteUser(user)}>
                       {t("common.delete")}
                     </button>
                   </td>
@@ -226,7 +145,10 @@ export default function AdminUsersPage() {
           <form
             className="card modal-card"
             onClick={(e) => e.stopPropagation()}
-            onSubmit={handleResetPassword}
+            onSubmit={(e) => {
+              e.preventDefault();
+              submitResetPassword();
+            }}
           >
             <h2>{t("adminUsers.resetTitle")}</h2>
             <div className="field">
