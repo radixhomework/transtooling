@@ -50,6 +50,20 @@ npm install
 npm run dev
 ```
 
+## Testing
+
+Unit tests run with Vitest + Testing Library (jsdom):
+
+```bash
+npm test          # single run
+npm run test:watch
+```
+
+The tests target the ViewModel layer (`src/viewmodels/`) and the
+`AuthContext`: each suite mocks the API modules in `src/models/` at the
+module boundary, so no backend is needed. i18n is stubbed globally in
+`src/test/setup.js` (keys are returned as-is, with a stable `t` identity).
+
 By default, the app calls `/api` (see `src/models/client.js`). In local dev
 without a reverse proxy, set `VITE_API_BASE_URL` (e.g.
 `http://localhost:8000/api`) in a local `.env` file, or run through

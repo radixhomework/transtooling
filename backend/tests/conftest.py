@@ -20,9 +20,121 @@ os.environ["ADMIN_PASSWORD"] = "AdminPass123"
 os.environ["JWT_SECRET"] = "test-secret-key"
 
 from app.main import app  # noqa: E402
-from app.core.database import engine  # noqa: E402
+from app.core.database import engine, init_db  # noqa: E402
 from app.models.whisper_model import WhisperModel, ModelStatus  # noqa: E402
 from sqlmodel import Session  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _initialized_database():
+    """Service-level unit tests never start the ASGI app, so make sure the
+    schema exists. init_db() is idempotent (CREATE TABLE IF NOT EXISTS)."""
+    init_db()
+    yield
+
+
+@pytest.fixture()
+def isolated_catalog():
+    """Snapshot-and-restore of the shared catalog tables (models, settings,
+    jobs). Service unit tests request it (via their db_session fixture) so
+    their mutations stay invisible to the other tests regardless of the
+    execution order."""
+    from sqlmodel import select
+
+    from app.models.app_settings import AppSettings
+    from app.models.job import TranscriptionJob
+    from app.models.translation import TranslationJob, TranslationModel
+    from app.models.whisper_model import WhisperModel
+
+    with Session(engine) as session:
+        whisper_snap = [
+            (
+                r.name, r.status, r.is_enabled, r.is_default, r.disk_size_mb,
+                r.download_progress, r.error_message, r.downloaded_at,
+            )
+            for r in session.exec(select(WhisperModel)).all()
+        ]
+        translation_snap = [
+            (
+                r.direction.value, r.status, r.is_enabled, r.disk_size_mb,
+                r.download_progress, r.error_message, r.downloaded_at,
+            )
+            for r in session.exec(select(TranslationModel)).all()
+        ]
+        settings_row = session.get(AppSettings, 1)
+        if settings_row is None:
+            # Some tests delete the singleton row on purpose; re-create it so
+            # the snapshot below always has values to restore.
+            from app.services.app_settings_service import get_settings_row
+
+            settings_row = get_settings_row(session)
+        settings_snap = (
+            settings_row.max_file_size_mb,
+            settings_row.max_duration_min,
+            settings_row.max_text_length_chars,
+            settings_row.preview_truncate_chars,
+            settings_row.max_archive_size_mb,
+            settings_row.max_archive_files_count,
+            settings_row.max_archive_uncompressed_mb,
+            settings_row.translatable_extensions,
+        )
+        transcription_job_ids = {r.id for r in session.exec(select(TranscriptionJob)).all()}
+        translation_job_ids = {r.id for r in session.exec(select(TranslationJob)).all()}
+
+    yield
+
+    with Session(engine) as session:
+        for job in session.exec(select(TranscriptionJob)).all():
+            if job.id not in transcription_job_ids:
+                session.delete(job)
+        for job in session.exec(select(TranslationJob)).all():
+            if job.id not in translation_job_ids:
+                session.delete(job)
+
+        for row in session.exec(select(WhisperModel)).all():
+            snap = next((s for s in whisper_snap if s[0] == row.name), None)
+            if snap is None:
+                session.delete(row)
+                continue
+            (_, status, is_enabled, is_default, disk, progress, error, downloaded_at) = snap
+            row.status = status
+            row.is_enabled = is_enabled
+            row.is_default = is_default
+            row.disk_size_mb = disk
+            row.download_progress = progress
+            row.error_message = error
+            row.downloaded_at = downloaded_at
+            session.add(row)
+
+        for row in session.exec(select(TranslationModel)).all():
+            snap = next((s for s in translation_snap if s[0] == row.direction.value), None)
+            if snap is None:
+                session.delete(row)
+                continue
+            (_, status, is_enabled, disk, progress, error, downloaded_at) = snap
+            row.status = status
+            row.is_enabled = is_enabled
+            row.disk_size_mb = disk
+            row.download_progress = progress
+            row.error_message = error
+            row.downloaded_at = downloaded_at
+            session.add(row)
+
+        row = session.get(AppSettings, 1)
+        if row is None:
+            row = AppSettings(id=1)
+        (
+            row.max_file_size_mb,
+            row.max_duration_min,
+            row.max_text_length_chars,
+            row.preview_truncate_chars,
+            row.max_archive_size_mb,
+            row.max_archive_files_count,
+            row.max_archive_uncompressed_mb,
+            row.translatable_extensions,
+        ) = settings_snap
+        session.add(row)
+        session.commit()
 
 
 @pytest.fixture(scope="session")

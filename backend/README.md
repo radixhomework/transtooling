@@ -41,6 +41,15 @@ The tests use a dedicated temporary SQLite database (created in a system
 temporary folder, isolated from any real database) and need no external
 service.
 
+Two layers are covered:
+
+- **API tests** (`test_*.py`): request/response behavior through the ASGI
+  app (TestClient), covering routing, permissions and status codes.
+- **Service unit tests** (`test_service_*.py`): the business logic layer
+  called directly, without HTTP. These request the `isolated_catalog`
+  fixture, which snapshots and restores the shared catalog tables so each
+  test runs against a predictable state regardless of execution order.
+
 Current coverage (Phases 1 & 2 + translation API):
 - authentication (login, refresh token, password change, brute-force protection)
 - user management (creation, enable/disable, password reset, deletion, admin/user permission checks)
