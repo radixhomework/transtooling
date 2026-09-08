@@ -1,34 +1,16 @@
-from typing import List
+"""Business logic for Whisper model administration."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import HTTPException
 from sqlmodel import Session, select
 
-from app.core.database import get_session
-from app.core.deps import get_current_user, require_admin
-from app.models.user import User
-from app.models.whisper_model import WhisperModel, ModelStatus
-from app.schemas import (
-    EnabledModelResponse,
-    WhisperModelResponse,
-    WhisperModelUpdateRequest,
-)
-
-router = APIRouter(prefix="/api/admin/whisper-models", tags=["admin-whisper-models"])
-
-# Public endpoint (any authenticated user): models usable for a
-# transcription, offered in the dashboard selector.
-public_router = APIRouter(prefix="/api/models", tags=["models"])
+from app.models.whisper_model import ModelStatus, WhisperModel
 
 # Supported faster-whisper models (static reference; the actual download
 # state is tracked in the database via WhisperModel).
 AVAILABLE_MODEL_NAMES = ["tiny", "base", "small", "medium", "large-v3"]
 
 
-@router.get("", response_model=List[WhisperModelResponse])
-def list_models(
-    session: Session = Depends(get_session),
-    _admin: User = Depends(require_admin),
-):
+def list_models_with_rows_ensured(session: Session) -> list[WhisperModel]:
     existing = {m.name: m for m in session.exec(select(WhisperModel)).all()}
 
     # Ensures every known model has a database row (created if needed).
@@ -42,12 +24,7 @@ def list_models(
     return session.exec(select(WhisperModel)).all()
 
 
-@router.post("/{model_name}/download", status_code=status.HTTP_202_ACCEPTED)
-def request_model_download(
-    model_name: str,
-    session: Session = Depends(get_session),
-    _admin: User = Depends(require_admin),
-):
+def request_download(session: Session, model_name: str) -> WhisperModel:
     if model_name not in AVAILABLE_MODEL_NAMES:
         raise HTTPException(status_code=400, detail="Modèle inconnu")
 
@@ -65,15 +42,10 @@ def request_model_download(
     model.error_message = None
     session.add(model)
     session.commit()
-    return {"detail": f"Téléchargement du modèle '{model_name}' déclenché"}
+    return model
 
 
-@router.delete("/{model_name}", status_code=status.HTTP_202_ACCEPTED)
-def request_model_deletion(
-    model_name: str,
-    session: Session = Depends(get_session),
-    _admin: User = Depends(require_admin),
-):
+def request_deletion(session: Session, model_name: str) -> WhisperModel:
     model = session.exec(select(WhisperModel).where(WhisperModel.name == model_name)).first()
     if not model or model.status != ModelStatus.downloaded:
         raise HTTPException(status_code=400, detail="Modèle non téléchargé")
@@ -91,27 +63,23 @@ def request_model_deletion(
     model.disk_size_mb = None
     session.add(model)
     session.commit()
-    return {"detail": f"Suppression du modèle '{model_name}' déclenchée"}
+    return model
 
 
-@router.patch("/{model_name}", response_model=WhisperModelResponse)
 def update_model(
-    model_name: str,
-    payload: WhisperModelUpdateRequest,
-    session: Session = Depends(get_session),
-    _admin: User = Depends(require_admin),
-):
+    session: Session, model_name: str, is_enabled: bool | None, is_default: bool | None
+) -> WhisperModel:
     model = session.exec(select(WhisperModel).where(WhisperModel.name == model_name)).first()
     if not model:
         raise HTTPException(status_code=404, detail="Modèle introuvable")
 
-    if payload.is_enabled is not None:
-        if payload.is_enabled and model.status != ModelStatus.downloaded:
+    if is_enabled is not None:
+        if is_enabled and model.status != ModelStatus.downloaded:
             raise HTTPException(
                 status_code=400,
                 detail="Le modèle doit être téléchargé avant d'être activé",
             )
-        if not payload.is_enabled and model.is_default:
+        if not is_enabled and model.is_default:
             raise HTTPException(
                 status_code=400,
                 detail=(
@@ -119,9 +87,9 @@ def update_model(
                     "Changez d'abord le modèle par défaut."
                 ),
             )
-        model.is_enabled = payload.is_enabled
+        model.is_enabled = is_enabled
 
-    if payload.is_default is not None and payload.is_default:
+    if is_default:
         if model.status != ModelStatus.downloaded:
             raise HTTPException(
                 status_code=400,
@@ -141,11 +109,7 @@ def update_model(
     return model
 
 
-@public_router.get("", response_model=List[EnabledModelResponse])
-def list_enabled_models(
-    session: Session = Depends(get_session),
-    _user: User = Depends(get_current_user),
-):
+def list_enabled_models(session: Session) -> list[WhisperModel]:
     """Models offered to users: downloaded AND enabled by the admin."""
     return session.exec(
         select(WhisperModel).where(
