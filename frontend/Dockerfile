@@ -1,5 +1,5 @@
 # --- Step 1: build ---
-FROM node:20-alpine AS build
+FROM node:alpine AS build
 
 WORKDIR /app
 

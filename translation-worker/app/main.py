@@ -8,7 +8,7 @@ import tempfile
 import threading
 import time
 import zipfile
-from datetime import datetime
+from datetime import datetime, timezone
 
 from huggingface_hub import snapshot_download
 from huggingface_hub.utils.tqdm import tqdm as hf_tqdm
@@ -251,7 +251,7 @@ def process_pending_model_downloads(session: Session) -> None:
                 tqdm_class=_make_progress_tqdm_class(state),
             )
             model.status = TranslationModelStatus.downloaded
-            model.downloaded_at = datetime.utcnow()
+            model.downloaded_at = datetime.now(timezone.utc)
             model.download_progress = 100
             model.disk_size_mb = _compute_model_disk_size_mb(direction)
             model.error_message = None
@@ -325,7 +325,7 @@ def recover_stale_processing_jobs(session: Session) -> None:
             logger.warning("Job %s stuck in 'processing' without input: marked as error.", job.id)
             job.status = TranslationJobStatus.error
             job.error_message = "Traitement interrompu (redémarrage du worker) et entrée introuvable"
-            job.finished_at = datetime.utcnow()
+            job.finished_at = datetime.now(timezone.utc)
         session.add(job)
     session.commit()
 
@@ -342,7 +342,7 @@ def process_pending_job(session: Session) -> bool:
         return False
 
     job.status = TranslationJobStatus.processing
-    job.started_at = datetime.utcnow()
+    job.started_at = datetime.now(timezone.utc)
     session.add(job)
     session.commit()
 
@@ -358,7 +358,7 @@ def process_pending_job(session: Session) -> bool:
         logger.info("Job %s cancelled by the user.", job.id)
         job.status = TranslationJobStatus.cancelled
         job.error_message = None
-        job.finished_at = datetime.utcnow()
+        job.finished_at = datetime.now(timezone.utc)
         # Cleanup of temporary inputs (cancellation can occur before
         # entering the actual processing).
         if job.job_type == TranslationJobType.archive:
@@ -371,12 +371,12 @@ def process_pending_job(session: Session) -> bool:
         job.status = TranslationJobStatus.error
         job.error_message = str(exc.reason or exc)
         job.stopped_reason = exc.reason
-        job.finished_at = datetime.utcnow()
+        job.finished_at = datetime.now(timezone.utc)
     except Exception as exc:  # noqa: BLE001
         logger.exception("Error while processing job %s", job.id)
         job.status = TranslationJobStatus.error
         job.error_message = str(exc)
-        job.finished_at = datetime.utcnow()
+        job.finished_at = datetime.now(timezone.utc)
     finally:
         session.add(job)
         session.commit()
@@ -403,7 +403,7 @@ def _process_text_job(session: Session, job: TranslationJob) -> None:
     translated = translate_texts(session, direction, [job.source_text], job_id=job.id)[0]
     job.result_text = translated
     job.status = TranslationJobStatus.done
-    job.finished_at = datetime.utcnow()
+    job.finished_at = datetime.now(timezone.utc)
     logger.info("Translation job %s completed.", job.id)
 
 
@@ -534,7 +534,7 @@ def _process_archive_job(session: Session, job: TranslationJob) -> None:
         job.result_zip_path = result_path
         job.report_json = json.dumps(report, ensure_ascii=False)
         job.status = TranslationJobStatus.done
-        job.finished_at = datetime.utcnow()
+        job.finished_at = datetime.now(timezone.utc)
         logger.info(
             "Archive job %s completed: %s translated, %s copied, %s errors.",
             job.id,

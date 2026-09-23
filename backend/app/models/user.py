@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 
@@ -16,5 +16,5 @@ class User(SQLModel, table=True):
     password_hash: str
     role: UserRole = Field(default=UserRole.user)
     is_active: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     last_login_at: Optional[datetime] = None

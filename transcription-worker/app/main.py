@@ -4,7 +4,7 @@ import os
 import shutil
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from huggingface_hub import snapshot_download
 from huggingface_hub.utils.tqdm import tqdm as hf_tqdm
@@ -221,7 +221,7 @@ def recover_stale_processing_jobs(session: Session) -> None:
             )
             job.status = JobStatus.error
             job.error_message = "Traitement interrompu (redémarrage du worker) et fichier audio introuvable"
-            job.finished_at = datetime.utcnow()
+            job.finished_at = datetime.now(timezone.utc)
         session.add(job)
     session.commit()
 
@@ -247,7 +247,7 @@ def process_pending_job(session: Session) -> bool:
 
     audio_path = _resolve_audio_path(job)
     job.status = JobStatus.processing
-    job.started_at = datetime.utcnow()
+    job.started_at = datetime.now(timezone.utc)
     job.progress = 0
     session.add(job)
     session.commit()
@@ -256,7 +256,7 @@ def process_pending_job(session: Session) -> bool:
     if _is_cancel_requested(session, job.id):
         job.status = JobStatus.cancelled
         job.error_message = None
-        job.finished_at = datetime.utcnow()
+        job.finished_at = datetime.now(timezone.utc)
         if audio_path and os.path.exists(audio_path):
             os.remove(audio_path)
         job.audio_tmp_filename = None
@@ -316,19 +316,19 @@ def process_pending_job(session: Session) -> bool:
         job.result_vtt_path = vtt_path
         job.status = JobStatus.done
         job.progress = 100
-        job.finished_at = datetime.utcnow()
+        job.finished_at = datetime.now(timezone.utc)
         logger.info("Job %s completed successfully.", job.id)
 
     except JobCancelled:
         logger.info("Job %s cancelled by the user.", job.id)
         job.status = JobStatus.cancelled
         job.error_message = None
-        job.finished_at = datetime.utcnow()
+        job.finished_at = datetime.now(timezone.utc)
     except Exception as exc:  # noqa: BLE001
         logger.exception("Error while processing job %s", job.id)
         job.status = JobStatus.error
         job.error_message = str(exc)
-        job.finished_at = datetime.utcnow()
+        job.finished_at = datetime.now(timezone.utc)
 
     finally:
         # The source audio is never kept, whatever the outcome.
@@ -382,7 +382,7 @@ def process_pending_model_downloads(session: Session) -> None:
                 download_root=settings.whisper_models_path,
             )
             model.status = ModelStatus.downloaded
-            model.downloaded_at = datetime.utcnow()
+            model.downloaded_at = datetime.now(timezone.utc)
             model.download_progress = 100
             model.disk_size_mb = _compute_model_disk_size_mb(model.name)
             model.error_message = None

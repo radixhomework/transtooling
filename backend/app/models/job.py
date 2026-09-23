@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 
@@ -47,6 +47,6 @@ class TranscriptionJob(SQLModel, table=True):
     # the worker during processing and set to 100 at the end.
     progress: Optional[int] = None
 
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None

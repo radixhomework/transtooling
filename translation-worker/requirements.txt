@@ -1,4 +1,4 @@
-sqlmodel==0.0.22
+sqlmodel==0.0.46
 ctranslate2==4.8.1
 sentencepiece>=0.2.0
 huggingface-hub>=0.34.0

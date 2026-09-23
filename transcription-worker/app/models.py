@@ -11,7 +11,7 @@ Future improvement idea: extract these models into a shared Python package
 manual duplication.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 
@@ -42,7 +42,7 @@ class TranscriptionJob(SQLModel, table=True):
     result_vtt_path: Optional[str] = None
     audio_duration_seconds: Optional[float] = None
     progress: Optional[int] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None
 
@@ -66,4 +66,4 @@ class WhisperModel(SQLModel, table=True):
     download_progress: Optional[int] = None
     error_message: Optional[str] = None
     downloaded_at: Optional[datetime] = None
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

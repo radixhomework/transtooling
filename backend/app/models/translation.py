@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 
@@ -58,7 +58,7 @@ class TranslationJob(SQLModel, table=True):
     # during processing and ends the job as "cancelled".
     cancel_requested: bool = Field(default=False)
 
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None
 
@@ -89,7 +89,7 @@ class TranslationModel(SQLModel, table=True):
     error_message: Optional[str] = None
 
     downloaded_at: Optional[datetime] = None
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class TranslationCache(SQLModel, table=True):
@@ -104,4 +104,4 @@ class TranslationCache(SQLModel, table=True):
     cache_key: str = Field(primary_key=True)  # sha256(direction + \x00 + texte source)
     direction: TranslationDirection
     translated_text: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

@@ -118,7 +118,7 @@ def test_process_pending_job_transcription_error_marks_error(db_session, make_au
 
 
 def test_process_pending_job_picks_oldest_first(db_session, make_audio_file, monkeypatch):
-    from datetime import datetime, timedelta
+    from datetime import datetime, timezone, timedelta
 
     make_audio_file("10.wav")
     make_audio_file("11.wav")
@@ -130,7 +130,7 @@ def test_process_pending_job_picks_oldest_first(db_session, make_audio_file, mon
         model_used="tiny",
         audio_tmp_filename="10.wav",
         status=JobStatus.pending,
-        created_at=datetime.utcnow() - timedelta(minutes=5),
+        created_at=datetime.now(timezone.utc) - timedelta(minutes=5),
     )
     newer = TranscriptionJob(
         id=11,
@@ -139,7 +139,7 @@ def test_process_pending_job_picks_oldest_first(db_session, make_audio_file, mon
         model_used="tiny",
         audio_tmp_filename="11.wav",
         status=JobStatus.pending,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     db_session.add(older)
     db_session.add(newer)

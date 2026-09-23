@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 
@@ -35,4 +35,4 @@ class WhisperModel(SQLModel, table=True):
     error_message: Optional[str] = None
 
     downloaded_at: Optional[datetime] = None
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
